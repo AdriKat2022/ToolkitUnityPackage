@@ -19,6 +19,10 @@ namespace AdriKat.AnimationScripts
         {
             isRotating = rotateOnAwake;
             initialRotation = transform.rotation;
+            if (rotateOnAwake)
+            {
+                Rotate();
+            }
         }
 
         public void SetDuration(float duration)
