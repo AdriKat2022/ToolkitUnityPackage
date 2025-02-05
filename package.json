@@ -1,0 +1,13 @@
+{
+  "name": "com.adrikat.animation.scripts",
+  "version": "1.0.0",
+  "displayName": "AnimationScripts",
+  "author": {
+    "name": "AdriKat",
+    "email": "adrien.schroedel@gmail.com",
+    "url": "https://adrikat2022.github.io/portfolio/"
+  },
+  "dependencies": {
+    "com.unity.textmeshpro": "3.0.4"
+  }
+}
