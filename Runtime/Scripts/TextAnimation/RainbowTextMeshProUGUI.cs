@@ -15,15 +15,19 @@ namespace AdriKat.AnimationScripts.Text
         [SerializeField] private bool activateOnAwake = true;
 
         [Header("Color")]
-        [SerializeField, Range(0f, 1f)] private float saturation = 1f;
-        [SerializeField, Range(0f, 1f)] private float brightness = 1f;
+        [Range(0f, 1f)]
+        [SerializeField] private float saturation = 1f;
+        [Range(0f, 1f)]
+        [SerializeField] private float brightness = 1f;
 
         [Header("Rainbow effect")]
-        [SerializeField, Range(0f, 5f)] private float speed = 2f;
+        [Range(0f, 5f)]
+        [SerializeField] private float speed = 2f;
         [SerializeField] private bool scrollEffect = true;
         [Tooltip("The higher the value, the more compact the colors will be in each letters.\n" +
             "The lower the value, the more spread the rainbow effect will be (zero is the same as deactivating the scroll effect).")]
-        [SerializeField, Range(0f, 3.14f)] private float letterColorDelta = 1f;
+        [Range(0f, 3.14f)]
+        [SerializeField] private float letterColorDelta = 1f;
         [SerializeField] private bool reverseDirection = false;
 
         [Header("Special behaviours")]
