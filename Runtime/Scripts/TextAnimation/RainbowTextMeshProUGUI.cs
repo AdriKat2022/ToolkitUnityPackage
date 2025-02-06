@@ -1,27 +1,66 @@
 using TMPro;
 using UnityEngine;
 
-namespace AdriKat.AnimationScripts
+namespace AdriKat.AnimationScripts.Text
 {
-    public class RainbowText : MonoBehaviour
+    /// <summary>
+    /// This script applies a rainbow effect to a TextMeshProUGUI component.
+    /// </summary>
+    public class RainbowTextMeshProUGUI : MonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI textMeshPro;
+        [Tooltip("If true, the rainbow effect will be applied on Awake.\n" +
+            "If false, you need to enable the component manually with the 'enabled' variable.\n" +
+            "For example: rainbowText.enabled = true;")]
         [SerializeField] private bool activateOnAwake = true;
 
         [Header("Color")]
         [SerializeField, Range(0f, 1f)] private float saturation = 1f;
         [SerializeField, Range(0f, 1f)] private float brightness = 1f;
 
-        [Header("Behaviour")]
-        [SerializeField, Range(-2f, 2)] private float spread = 1f;
+        [Header("Rainbow effect")]
         [SerializeField, Range(0f, 5f)] private float speed = 2f;
         [SerializeField] private bool scrollEffect = true;
+        [Tooltip("The higher the value, the more compact the colors will be in each letters.\n" +
+            "The lower the value, the more spread the rainbow effect will be (zero is the same as deactivating the scroll effect).")]
+        [SerializeField, Range(0f, 3.14f)] private float letterColorDelta = 1f;
+        [SerializeField] private bool reverseDirection = false;
+
+        [Header("Special behaviours")]
+        [SerializeField] private bool restoreColorOnDisabled = true;
+        [SerializeField] private Color defaultColor = Color.white;
+        [Tooltip("If true, the component will remember the last color of the text when it is enabled, " +
+            "and replace the default color with it.")]
+        [SerializeField] private bool rememberLastColorOnEnabled = false;
 
         private void Awake()
         {
             if (!activateOnAwake)
             {
                 enabled = false;
+            }
+        }
+
+        private void OnEnable()
+        {
+            if (textMeshPro == null)
+                return;
+            if (rememberLastColorOnEnabled)
+            {
+                defaultColor = textMeshPro.color;
+            }
+            textMeshPro.color = defaultColor;
+        }
+
+        private void OnDisable()
+        {
+            if (textMeshPro == null)
+                return;
+
+            if (restoreColorOnDisabled)
+            {
+                textMeshPro.color = defaultColor;
+                textMeshPro.ForceMeshUpdate();
             }
         }
 
@@ -37,7 +76,9 @@ namespace AdriKat.AnimationScripts
         {
             textMeshPro.ForceMeshUpdate();
             TMP_TextInfo textInfo = textMeshPro.textInfo;
-            float timeOffset = Time.time * speed;
+
+            // If the speed is negative, the colors will go backwards
+            float timeOffset = speed * Time.time;
 
             for (int i = 0; i < textInfo.characterCount; i++)
             {
@@ -56,7 +97,9 @@ namespace AdriKat.AnimationScripts
             int materialIndex = textInfo.characterInfo[index].materialReferenceIndex;
             Color32[] newVertexColors = textInfo.meshInfo[materialIndex].colors32;
 
-            float hue = (scrollEffect ? (index / (float)textInfo.characterCount) * spread : 0) + timeOffset;
+            index = reverseDirection ? textInfo.characterCount - index - 1 : index;
+
+            float hue = (scrollEffect ? (index / (float)textInfo.characterCount) * letterColorDelta : 0) + timeOffset;
             hue %= 1f;
             Color color = Color.HSVToRGB(hue, saturation, brightness);
 
