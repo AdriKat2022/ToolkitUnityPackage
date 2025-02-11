@@ -13,7 +13,7 @@ namespace AdriKat.Utils.Debugging
     {
         [SerializeField] private TextMeshProUGUI _textPrefab;
         [SerializeField] private VerticalLayoutGroup _layoutGroup;
-        [SerializeField] private float _logTTL = 50f;
+        [SerializeField] private float _logTTL = 5f;
         [SerializeField] private bool _showWarning = true;
         [SerializeField] private bool _dontDestroyOnLoad = true;
         [SerializeField] private bool _showLogs = true;
@@ -55,16 +55,14 @@ namespace AdriKat.Utils.Debugging
 
         private void InstantiateDefaultConfiguration()
         {
-            Canvas canvas = FindAnyObjectByType<Canvas>();
+            Canvas canvas;
 
-            if (!canvas)
-            {
-                GameObject go = new GameObject("Canvas");
-                canvas = go.AddComponent<Canvas>();
-                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-                go.AddComponent<CanvasScaler>();
-                go.AddComponent<GraphicRaycaster>();
-            }
+            GameObject canvasGo = new GameObject("Canvas");
+            canvas = canvasGo.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvasGo.AddComponent<CanvasScaler>();
+            canvasGo.AddComponent<GraphicRaycaster>();
+
             if (_layoutGroup == null)
             {
                 RectTransform container = new GameObject("LogsContainer").AddComponent<RectTransform>();
@@ -86,6 +84,12 @@ namespace AdriKat.Utils.Debugging
                 _textPrefab.alignment = TextAlignmentOptions.TopRight;
                 ContentSizeFitter fitter = _textPrefab.gameObject.AddComponent<ContentSizeFitter>();
                 fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+                if (_dontDestroyOnLoad)
+                {
+                    DontDestroyOnLoad(_textPrefab.gameObject);
+                    DontDestroyOnLoad(canvasGo);
+                }
             }
         }
 
