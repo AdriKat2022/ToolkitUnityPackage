@@ -52,6 +52,17 @@ namespace AdriKat.Utils.Debugging
                 InstantiateDefaultConfiguration();
             }
 
+            if (_layoutGroup == null)
+            {
+                if (_showWarning)
+                {
+                    Debug.LogWarning("The layout group has not been instanciated. Did you reference a text prefab but no layout group ?\n" +
+                        "The layout group must be inside a overlay canvas and on the starting scene.\n" +
+                        "Instanciating default configuration.");
+                }
+                InstantiateDefaultConfiguration();
+            }
+
             if (_dontDestroyOnLoad)
             {
                 // If the text prefab is NOT a prefab, make sure it doesn't get destroyed on scene load
