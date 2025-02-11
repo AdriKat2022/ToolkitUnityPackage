@@ -12,7 +12,6 @@ namespace AdriKat.Utils.CodePatterns
     {
         private static T _instance;
         private static readonly object _lock = new();
-        private static bool _applicationIsQuitting = false;
 
         /// <summary>
         /// Allow or not lazy instantiation of the singleton.<br/>
@@ -29,12 +28,6 @@ namespace AdriKat.Utils.CodePatterns
         {
             get
             {
-                if (_applicationIsQuitting)
-                {
-                    Debug.LogWarning($"[Singleton] Instance of {typeof(T)} already destroyed. Returning null.");
-                    return null;
-                }
-
                 lock (_lock)
                 {
                     if (_instance == null)
@@ -90,11 +83,6 @@ namespace AdriKat.Utils.CodePatterns
                     }
                 }
             }
-        }
-
-        private void OnApplicationQuit()
-        {
-            _applicationIsQuitting = true;
         }
     }
 }

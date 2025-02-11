@@ -12,7 +12,6 @@ namespace AdriKat.Utils.CodePatterns
     public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
     {
         private static T _instance;
-        private static bool _applicationIsQuitting = false;
 
         /// <summary>
         /// Allow or not lazy instantiation of the singleton.<br/>
@@ -29,12 +28,6 @@ namespace AdriKat.Utils.CodePatterns
         {
             get
             {
-                if (_applicationIsQuitting)
-                {
-                    Debug.LogWarning($"[Singleton] Instance of {typeof(T)} already destroyed. Returning null.");
-                    return null;
-                }
-
                 if (_instance == null)
                 {
                     _instance = FindAnyObjectByType<T>();
@@ -84,11 +77,6 @@ namespace AdriKat.Utils.CodePatterns
                     DontDestroyOnLoad(gameObject);
                 }
             }
-        }
-
-        private void OnApplicationQuit()
-        {
-            _applicationIsQuitting = true;
         }
     }
 }
