@@ -1,9 +1,9 @@
 using System.Collections;
 using UnityEngine;
 
-namespace AdriKat.Utils.Camera
+namespace AdriKat.Utils.Animations
 {
-    public class CameraShake : MonoBehaviour
+    public class ShakeAnimation : MonoBehaviour
     {
         #region Variables
         [SerializeField] private GameObject _objectToShake;

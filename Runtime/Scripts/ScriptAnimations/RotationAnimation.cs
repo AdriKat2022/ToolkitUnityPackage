@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace AdriKat.Utils
+namespace AdriKat.Utils.Animations
 {
     public class RotationAnimation : MonoBehaviour
     {
