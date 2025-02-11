@@ -3,125 +3,128 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// Helper class to log messages on the screen. Useful for debugging purposes, especially on builds where the log might not be visible.<br/>
-/// Warning as is may be expensive to spam Log calls when active.
-/// </summary>
-public class LiveLogger : MonoBehaviour
+namespace AdriKat.AnimationScripts.Debugging
 {
-    [SerializeField] private TextMeshProUGUI _textPrefab;
-    [SerializeField] private VerticalLayoutGroup _layoutGroup;
-    [SerializeField] private float _logTTL = 50f;
-    [SerializeField] private bool _showWarning = true;
-    [SerializeField] private bool _dontDestroyOnLoad = true;
-    [SerializeField] private bool _showLogs = true;
-
-    #region Singleton
-    private static LiveLogger _instance;
-
-    private void Awake()
+    /// <summary>
+    /// Helper class to log messages on the screen. Useful for debugging purposes, especially on builds where the log might not be visible.<br/>
+    /// Warning as is may be expensive to spam Log calls when active.
+    /// </summary>
+    public class LiveLogger : MonoBehaviour
     {
-        if (_instance != null)
+        [SerializeField] private TextMeshProUGUI _textPrefab;
+        [SerializeField] private VerticalLayoutGroup _layoutGroup;
+        [SerializeField] private float _logTTL = 50f;
+        [SerializeField] private bool _showWarning = true;
+        [SerializeField] private bool _dontDestroyOnLoad = true;
+        [SerializeField] private bool _showLogs = true;
+
+        #region Singleton
+        private static LiveLogger _instance;
+
+        private void Awake()
         {
-            Debug.LogWarning("There is already an instance of LiveLogger in the scene. Deleting this one.");
-            Destroy(this);
-            return;
-        }
-
-        _instance = this;
-
-        if (_dontDestroyOnLoad)
-        {
-            DontDestroyOnLoad(gameObject);
-        }
-    }
-
-    #endregion
-
-    private void Start()
-    {
-        if (_textPrefab == null)
-        {
-            if (_showWarning)
+            if (_instance != null)
             {
-                Debug.LogWarning("Consider having a ready instanced live logger for more customization on the text prefab.");
+                Debug.LogWarning("There is already an instance of LiveLogger in the scene. Deleting this one.");
+                Destroy(this);
+                return;
             }
 
-            InstantiateDefaultConfiguration();
+            _instance = this;
+
+            if (_dontDestroyOnLoad)
+            {
+                DontDestroyOnLoad(gameObject);
+            }
         }
-    }
 
-    private void InstantiateDefaultConfiguration()
-    {
-        Canvas canvas = FindAnyObjectByType<Canvas>();
+        #endregion
 
-        if (!canvas)
+        private void Start()
         {
-            GameObject go = new GameObject("Canvas");
-            canvas = go.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            go.AddComponent<CanvasScaler>();
-            go.AddComponent<GraphicRaycaster>();
+            if (_textPrefab == null)
+            {
+                if (_showWarning)
+                {
+                    Debug.LogWarning("Consider having a ready instanced live logger for more customization on the text prefab.");
+                }
+
+                InstantiateDefaultConfiguration();
+            }
         }
-        if (_layoutGroup == null)
+
+        private void InstantiateDefaultConfiguration()
         {
-            RectTransform container = new GameObject("LogsContainer").AddComponent<RectTransform>();
-            container.transform.SetParent(canvas.transform, false);
-            container.anchorMin = new Vector2(1f, 0f);
-            container.anchorMax = new Vector2(1f, 1f);
-            container.pivot = new Vector2(1f, 1f);
-            container.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 600);
+            Canvas canvas = FindAnyObjectByType<Canvas>();
 
-            _layoutGroup = container.gameObject.AddComponent<VerticalLayoutGroup>();
-            _layoutGroup.childControlWidth = true;
-            _layoutGroup.childControlHeight = false;
-            _layoutGroup.childAlignment = TextAnchor.UpperRight;
-            _layoutGroup.childForceExpandHeight = false;
-            _layoutGroup.spacing = 30;
-            _layoutGroup.padding = new RectOffset(0, 20, 20, 0);
+            if (!canvas)
+            {
+                GameObject go = new GameObject("Canvas");
+                canvas = go.AddComponent<Canvas>();
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                go.AddComponent<CanvasScaler>();
+                go.AddComponent<GraphicRaycaster>();
+            }
+            if (_layoutGroup == null)
+            {
+                RectTransform container = new GameObject("LogsContainer").AddComponent<RectTransform>();
+                container.transform.SetParent(canvas.transform, false);
+                container.anchorMin = new Vector2(1f, 0f);
+                container.anchorMax = new Vector2(1f, 1f);
+                container.pivot = new Vector2(1f, 1f);
+                container.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 600);
 
-            _textPrefab = new GameObject("LiveLoggerTextTemplate").AddComponent<TextMeshProUGUI>();
-            _textPrefab.alignment = TextAlignmentOptions.TopRight;
-            ContentSizeFitter fitter = _textPrefab.gameObject.AddComponent<ContentSizeFitter>();
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+                _layoutGroup = container.gameObject.AddComponent<VerticalLayoutGroup>();
+                _layoutGroup.childControlWidth = true;
+                _layoutGroup.childControlHeight = false;
+                _layoutGroup.childAlignment = TextAnchor.UpperRight;
+                _layoutGroup.childForceExpandHeight = false;
+                _layoutGroup.spacing = 30;
+                _layoutGroup.padding = new RectOffset(0, 20, 20, 0);
+
+                _textPrefab = new GameObject("LiveLoggerTextTemplate").AddComponent<TextMeshProUGUI>();
+                _textPrefab.alignment = TextAlignmentOptions.TopRight;
+                ContentSizeFitter fitter = _textPrefab.gameObject.AddComponent<ContentSizeFitter>();
+                fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            }
         }
-    }
 
-    /// <summary>
-    /// Logs a message on the screen.<br/>
-    /// Creates a text object with the message and destroys it after a set amount of time.<br/>
-    /// If no instances of LiveLogger are found in the scene, a new one will be created with a default configuration
-    /// and used for the rest of the game.
-    /// </summary>
-    /// <param name="text">Log text</param>
-    public static void Log(string text)
-    {
-        // If the instance is null, create a new GameObject with the LiveLogger component attached to it
-        if (_instance == null)
+        /// <summary>
+        /// Logs a message on the screen.<br/>
+        /// Creates a text object with the message and destroys it after a set amount of time.<br/>
+        /// If no instances of LiveLogger are found in the scene, a new one will be created with a default configuration
+        /// and used for the rest of the game.
+        /// </summary>
+        /// <param name="text">Log text</param>
+        public static void Log(string text)
         {
-            GameObject go = new GameObject("LiveLogger");
-            _instance = go.AddComponent<LiveLogger>();
+            // If the instance is null, create a new GameObject with the LiveLogger component attached to it
+            if (_instance == null)
+            {
+                GameObject go = new GameObject("LiveLogger");
+                _instance = go.AddComponent<LiveLogger>();
+            }
+
+            if (_instance._showLogs)
+            {
+                _ = _instance.LogInternal(text);
+            }
         }
 
-        if (_instance._showLogs)
+        private async Task LogInternal(string text)
         {
-            _ = _instance.LogInternal(text);
+            while (_layoutGroup == null)
+            {
+                // Wait for the layout group to be assigned
+                await Task.Yield();
+            }
+
+            TextMeshProUGUI textInstance = Instantiate(_textPrefab, _layoutGroup.transform);
+            textInstance.text = text;
+            textInstance.transform.SetAsFirstSibling();
+            Destroy(textInstance.gameObject, _logTTL);
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_layoutGroup.GetComponent<RectTransform>());
         }
-    }
-
-    private async Task LogInternal(string text)
-    {
-        while (_layoutGroup == null)
-        {
-            // Wait for the layout group to be assigned
-            await Task.Yield();
-        }
-
-        TextMeshProUGUI textInstance = Instantiate(_textPrefab, _layoutGroup.transform);
-        textInstance.text = text;
-        textInstance.transform.SetAsFirstSibling();
-        Destroy(textInstance.gameObject, _logTTL);
-
-        LayoutRebuilder.ForceRebuildLayoutImmediate(_layoutGroup.GetComponent<RectTransform>());
     }
 }
