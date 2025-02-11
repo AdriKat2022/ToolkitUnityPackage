@@ -8,6 +8,8 @@ namespace AdriKat.AnimationScripts.Text
     /// </summary>
     public class RainbowTextMeshProUGUI : MonoBehaviour
     {
+        private const int WidthTextReference = 1000;
+
         [SerializeField] private TextMeshProUGUI textMeshPro;
         [Tooltip("If true, the rainbow effect will be applied on Awake.\n" +
             "If false, you need to enable the component manually with the 'enabled' variable.\n" +
@@ -23,12 +25,13 @@ namespace AdriKat.AnimationScripts.Text
         [Header("Rainbow effect")]
         [Range(0f, 5f)]
         [SerializeField] private float speed = 2f;
+        [SerializeField] private bool positionBased = false;
         [SerializeField] private bool scrollEffect = true;
         [Tooltip("The higher the value, the more compact the colors will be in each letters.\n" +
             "The lower the value, the more spread the rainbow effect will be (zero is the same as deactivating the scroll effect).")]
-        [Range(0f, 3.14f)]
+        [Range(0f, 5f)]
         [SerializeField] private float letterColorDelta = 1f;
-        [SerializeField] private bool reverseDirection = false;
+        [SerializeField] private bool reverseScrollDirection = false;
 
         [Header("Special behaviours")]
         [SerializeField] private bool restoreColorOnDisabled = true;
@@ -101,10 +104,20 @@ namespace AdriKat.AnimationScripts.Text
             int materialIndex = textInfo.characterInfo[index].materialReferenceIndex;
             Color32[] newVertexColors = textInfo.meshInfo[materialIndex].colors32;
 
-            index = reverseDirection ? textInfo.characterCount - index - 1 : index;
+            float hue = timeOffset * (reverseScrollDirection ? -1 : 1);
 
-            float hue = (scrollEffect ? (index / (float)textInfo.characterCount) * letterColorDelta : 0) + timeOffset;
-            hue %= 1f;
+            if (scrollEffect && positionBased)
+            {
+                hue += textMeshPro.mesh.vertices[vertexIndex].x * letterColorDelta / WidthTextReference;
+            }
+            else if (scrollEffect)
+            {
+                hue += (index / (float)textInfo.characterCount) * letterColorDelta;
+            }
+
+            // Make sure the hue stays between 0 and 1
+            hue = Mathf.Repeat(hue, 1f);
+
             Color color = Color.HSVToRGB(hue, saturation, brightness);
 
             newVertexColors[vertexIndex + 0] = color;
