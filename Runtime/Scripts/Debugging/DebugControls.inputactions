@@ -1,0 +1,94 @@
+{
+    "name": "DebugControls",
+    "maps": [
+        {
+            "name": "Debug",
+            "id": "c10ec637-8a4d-43a5-b576-73edbc786e6a",
+            "actions": [
+                {
+                    "name": "Debug1",
+                    "type": "Button",
+                    "id": "f2d3900e-ed9f-4e60-a731-301dd2e1c359",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Debug2",
+                    "type": "Button",
+                    "id": "6db1c9c2-9668-4e1f-89fe-e698f16d2a12",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Debug3",
+                    "type": "Button",
+                    "id": "b2223575-af06-4d7a-82c5-a11d9fc119ee",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Debug4",
+                    "type": "Button",
+                    "id": "156c7084-009d-4751-b726-3472ba48288e",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "f77b05fc-59b9-42ff-b621-c05751b67578",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Debug1",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7f8d3de0-cbbd-4e9a-9989-8521467333b2",
+                    "path": "<Keyboard>/w",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Debug2",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "09d78eab-985a-4081-a4a3-a7832a4c0f3d",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Debug3",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "77af1a07-4939-4d73-99a0-a3a7eeb280f5",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Debug4",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 1a5a1db999b723a4c9a21a5ffd02bcfd
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - debugActionKey1: {fileID: 3911832559721551014, guid: 7ccd9ceb37421c54db0ec14ade797078, type: 3}
+  - debugActionKey2: {fileID: 6001309541193736172, guid: 7ccd9ceb37421c54db0ec14ade797078, type: 3}
+  - debugActionKey3: {fileID: -3202584207592138688, guid: 7ccd9ceb37421c54db0ec14ade797078, type: 3}
+  - debugActionKey4: {fileID: 7056428808690224210, guid: 7ccd9ceb37421c54db0ec14ade797078, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
