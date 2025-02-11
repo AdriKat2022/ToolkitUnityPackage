@@ -51,6 +51,19 @@ namespace AdriKat.Utils.Debugging
 
                 InstantiateDefaultConfiguration();
             }
+
+            if (_dontDestroyOnLoad)
+            {
+                // If the text prefab is NOT a prefab, make sure it doesn't get destroyed on scene load
+                if (_textPrefab.gameObject.scene.name != null)
+                {
+                    DontDestroyOnLoad(_textPrefab.gameObject);
+                }
+                if (_layoutGroup != null)
+                {
+                    DontDestroyOnLoad(_layoutGroup.transform.parent.gameObject);
+                }
+            }
         }
 
         private void InstantiateDefaultConfiguration()
