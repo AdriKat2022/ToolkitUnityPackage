@@ -1,5 +1,5 @@
 {
-    "name": "AnimationScripts",
+    "name": "Utils",
     "rootNamespace": "",
     "references": [
         "Unity.TextMeshPro",

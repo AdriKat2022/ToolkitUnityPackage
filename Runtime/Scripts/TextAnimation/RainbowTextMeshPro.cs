@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-namespace AdriKat.AnimationScripts.Text
+namespace AdriKat.Utils.Text
 {
     /// <summary>
     /// This script applies a rainbow effect to a TextMeshPro component.

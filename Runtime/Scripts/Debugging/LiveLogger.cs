@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace AdriKat.AnimationScripts.Debugging
+namespace AdriKat.Utils.Debugging
 {
     /// <summary>
     /// Helper class to log messages on the screen. Useful for debugging purposes, especially on builds where the log might not be visible.<br/>

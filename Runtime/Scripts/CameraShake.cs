@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace AdriKat.AnimationScripts.Camera
+namespace AdriKat.Utils.Camera
 {
     public class CameraShake : MonoBehaviour
     {
