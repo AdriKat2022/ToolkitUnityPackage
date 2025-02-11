@@ -14,8 +14,15 @@ namespace AdriKat.Utils.CodePatterns
         private static readonly object _lock = new();
         private static bool _applicationIsQuitting = false;
 
+        /// <summary>
+        /// Allow or not lazy instantiation of the singleton.<br/>
+        /// If true, the singleton can be created at runtime if it doesn't exist.<br/>
+        /// If false, getter returns null and throws a warning if the singleton doesn't exist.<br/>
+        /// </summary>
+        public static bool AllowLazyInstantiation { get; set; } = false;
+
         [Header("Singleton Settings")]
-        [SerializeField] private bool _dontDestoyOnLoad = false;
+        [SerializeField] private bool _dontDestroyOnLoad = false;
         [SerializeField] private SingletonPolicy singletonPolicy = SingletonPolicy.FirstStays;
 
         public static T Instance
@@ -36,11 +43,19 @@ namespace AdriKat.Utils.CodePatterns
 
                         if (_instance == null)
                         {
-                            GameObject singletonObject = new GameObject(typeof(T).Name);
-                            _instance = singletonObject.AddComponent<T>();
-                            DontDestroyOnLoad(singletonObject);
+                            if (AllowLazyInstantiation) // Only create if lazy instantiation is enabled
+                            {
+                                Debug.Log($"[Singleton] Creating a new instance of {typeof(T)}.");
+                                GameObject singletonObject = new GameObject(typeof(T).Name);
+                                _instance = singletonObject.AddComponent<T>();
+                            }
+                            else
+                            {
+                                Debug.LogWarning($"[Singleton] Instance of {typeof(T)} not found and lazy instantiation is disabled.");
+                            }
                         }
                     }
+
                     return _instance;
                 }
             }
@@ -60,7 +75,7 @@ namespace AdriKat.Utils.CodePatterns
                     {
                         Destroy(_instance.gameObject); // Old instance gets replaced.
                         _instance = this as T;
-                        if (_dontDestoyOnLoad)
+                        if (_dontDestroyOnLoad)
                         {
                             DontDestroyOnLoad(gameObject);
                         }
@@ -69,7 +84,7 @@ namespace AdriKat.Utils.CodePatterns
                 else
                 {
                     _instance = this as T;
-                    if (_dontDestoyOnLoad)
+                    if (_dontDestroyOnLoad)
                     {
                         DontDestroyOnLoad(gameObject);
                     }
