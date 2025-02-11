@@ -13,6 +13,8 @@ namespace AdriKat.Utils.CodePatterns
         private static T _instance;
         private static bool _applicationIsQuitting = false;
 
+        [Header("Singleton Settings")]
+        [SerializeField] private bool _dontDestoyOnLoad = true;
         [SerializeField] private SingletonPolicy singletonPolicy = SingletonPolicy.FirstStays;
 
         public static T Instance
@@ -52,13 +54,19 @@ namespace AdriKat.Utils.CodePatterns
                 {
                     Destroy(_instance.gameObject); // Old instance gets replaced.
                     _instance = this as T;
-                    DontDestroyOnLoad(gameObject);
+                    if (_dontDestoyOnLoad)
+                    {
+                        DontDestroyOnLoad(gameObject);
+                    }
                 }
             }
             else
             {
                 _instance = this as T;
-                DontDestroyOnLoad(gameObject);
+                if (_dontDestoyOnLoad)
+                {
+                    DontDestroyOnLoad(gameObject);
+                }
             }
         }
 
