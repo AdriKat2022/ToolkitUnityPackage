@@ -7,6 +7,7 @@ Facing this "issue" of copying scripts from other projects (which is not really 
 ## About the code
 Part if the goal of this package is to provide scripts that are easy to use and understand. But also to get better at writing code that is clean, efficient, maintainable and documented.
 
+### Rules I follow for this development
 Here are the rules I believe are great to follow when writing code that I abide to for this package:
 - **Strict naming convention**: Private fields are prefixed with an underscore, public fields and methods are PascalCase, and local variables are camelCase.
 - **Consistent code style**: The code's indentation and braces placement is kept consistent.
@@ -16,6 +17,10 @@ Here are the rules I believe are great to follow when writing code that I abide 
 - **Efficiency**: I attempt to write code that is efficient and optimized. I avoid unnecessary operations and try to keep the code as clean as possible.
 - **Unity API usage**: I try to use the Unity API in the most efficient way possible. I avoid using `Update()` when it's not necessary, and I use `OnEnable()` and `OnDisable()` when needed.
 - **DRY principle**: I use inheritance, interfaces or composition accordingly and other OOP principles to keep the code clean and maintainable.
+- **No magic numbers**: Using magic numbers in the code is close to banned. I use constants or serialized fields instead to keep the code extra flexible from the inspector.
+
+### Unity Editor
+> ***[Section Coming Soon]***
 
 ## Content
 Currently, there isn't much for the majority of games. But I intend to make this package grow in power and make it as much handy as possible.  
