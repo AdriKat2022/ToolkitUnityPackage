@@ -120,7 +120,7 @@ namespace AdriKat.Utils.UIElements
 
             if (_holdAction == null)
             {
-                Debug.LogWarning("Hold action not set.");
+                Debug.LogWarning("Hold action not set.", gameObject);
                 _doNotUseInputSystem = true;
                 return;
             }
@@ -136,7 +136,7 @@ namespace AdriKat.Utils.UIElements
 
             if (_holdAction == null)
             {
-                Debug.LogWarning("Hold action not set.");
+                Debug.LogWarning("Hold action not set.", gameObject);
                 _doNotUseInputSystem = true;
                 return;
             }
@@ -155,7 +155,7 @@ namespace AdriKat.Utils.UIElements
 
             if (_debug)
             {
-                Debug.Log("Hold action initated.");
+                Debug.Log("Hold action initated.", gameObject);
             }
         }
 
@@ -193,7 +193,7 @@ namespace AdriKat.Utils.UIElements
 
             if (_debug)
             {
-                Debug.Log("Hold completed. Fired event.");
+                Debug.Log("Hold completed. Fired event.", gameObject);
             }
         }
 
@@ -239,7 +239,7 @@ namespace AdriKat.Utils.UIElements
 
             if (_debug)
             {
-                Debug.Log("Cancelled SuccessAnimation");
+                Debug.Log("Cancelled SuccessAnimation", gameObject);
             }
         }
 
@@ -266,7 +266,7 @@ namespace AdriKat.Utils.UIElements
 
             if (_debug)
             {
-                Debug.Log("Started SuccessAnimation");
+                Debug.Log("Started SuccessAnimation", gameObject);
             }
 
             while (timer < _successAnimationDuration)
@@ -284,7 +284,7 @@ namespace AdriKat.Utils.UIElements
 
             if (_debug)
             {
-                Debug.Log("Ended SuccessAnimation");
+                Debug.Log("Ended SuccessAnimation", gameObject);
             }
         }
     }
