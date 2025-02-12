@@ -17,6 +17,12 @@ namespace AdriKat.Utils.UIElements
             InstantiatePrefabWithGUID("cd0d81277799fbd4687d8eb9a4ec80c8");
         }
 
+        [MenuItem("GameObject/Debugging/LiveLogger", false, 10)]
+        private static void InstantiateLiveLogger()
+        {
+            InstantiatePrefabWithGUID("eafa3d82aa67114488f702b184b89bb9");
+        }
+
         private static GameObject InstantiatePrefabWithGUID(string prefabGUID)
         {
             string prefabPath = AssetDatabase.GUIDToAssetPath(prefabGUID);

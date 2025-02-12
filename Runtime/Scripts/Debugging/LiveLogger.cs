@@ -1,3 +1,4 @@
+using AdriKat.Utils.CodePatterns;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
@@ -9,36 +10,14 @@ namespace AdriKat.Utils.Debugging
     /// Helper class to log messages on the screen. Useful for debugging purposes, especially on builds where the log might not be visible.<br/>
     /// Warning as is may be expensive to spam Log calls when active.
     /// </summary>
-    public class LiveLogger : MonoBehaviour
+    public class LiveLogger : Singleton<LiveLogger>
     {
+        [Header("Live Logger Settings")]
         [SerializeField] private TextMeshProUGUI _textPrefab;
         [SerializeField] private VerticalLayoutGroup _layoutGroup;
         [SerializeField] private float _logTTL = 5f;
         [SerializeField] private bool _showWarning = true;
-        [SerializeField] private bool _dontDestroyOnLoad = true;
         [SerializeField] private bool _showLogs = true;
-
-        #region Singleton
-        private static LiveLogger _instance;
-
-        private void Awake()
-        {
-            if (_instance != null)
-            {
-                Debug.LogWarning("There is already an instance of LiveLogger in the scene. Deleting this one.");
-                Destroy(this);
-                return;
-            }
-
-            _instance = this;
-
-            if (_dontDestroyOnLoad)
-            {
-                DontDestroyOnLoad(gameObject);
-            }
-        }
-
-        #endregion
 
         private void Start()
         {
@@ -46,7 +25,8 @@ namespace AdriKat.Utils.Debugging
             {
                 if (_showWarning)
                 {
-                    Debug.LogWarning("Consider having a ready instanced live logger for more customization on the text prefab.");
+                    Debug.LogWarning("Consider having a ready instanced live logger for more customization on the text prefab.\n" +
+                        "You can easily create it with the context menu GameObject->Debugging->LiveLogger.");
                 }
 
                 InstantiateDefaultConfiguration();
@@ -63,26 +43,19 @@ namespace AdriKat.Utils.Debugging
                 InstantiateDefaultConfiguration();
             }
 
-            if (_dontDestroyOnLoad)
+            if (_textPrefab == null || _layoutGroup == null)
             {
-                // If the text prefab is NOT a prefab, make sure it doesn't get destroyed on scene load
-                if (_textPrefab.gameObject.scene.name != null)
-                {
-                    DontDestroyOnLoad(_textPrefab.gameObject);
-                }
-                if (_layoutGroup != null)
-                {
-                    DontDestroyOnLoad(_layoutGroup.transform.parent.gameObject);
-                }
+                Debug.LogError("LiveLogger could not be instanciated. Check the console for more information.");
+                return;
             }
+
+            _textPrefab.text = "";
         }
 
         private void InstantiateDefaultConfiguration()
         {
-            Canvas canvas;
-
             GameObject canvasGo = new GameObject("Canvas");
-            canvas = canvasGo.AddComponent<Canvas>();
+            Canvas canvas = canvasGo.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvasGo.AddComponent<CanvasScaler>();
             canvasGo.AddComponent<GraphicRaycaster>();
@@ -109,11 +82,8 @@ namespace AdriKat.Utils.Debugging
                 ContentSizeFitter fitter = _textPrefab.gameObject.AddComponent<ContentSizeFitter>();
                 fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-                if (_dontDestroyOnLoad)
-                {
-                    DontDestroyOnLoad(_textPrefab.gameObject);
-                    DontDestroyOnLoad(canvasGo);
-                }
+                DontDestroyOnLoad(_textPrefab.gameObject);
+                DontDestroyOnLoad(canvasGo);
             }
         }
 
@@ -127,20 +97,19 @@ namespace AdriKat.Utils.Debugging
         public static void Log(string text)
         {
             // If the instance is null, create a new GameObject with the LiveLogger component attached to it
-            if (_instance == null)
+            if (Instance == null)
             {
                 GameObject go = new GameObject("LiveLogger");
-                _instance = go.AddComponent<LiveLogger>();
+                go.AddComponent<LiveLogger>();
             }
 
-            if (_instance._showLogs)
-            {
-                _ = _instance.LogInternal(text);
-            }
+            _ = Instance.LogInternal(text);
         }
 
         private async Task LogInternal(string text)
         {
+            if (!_showLogs) return;
+
             while (_layoutGroup == null)
             {
                 // Wait for the layout group to be assigned
