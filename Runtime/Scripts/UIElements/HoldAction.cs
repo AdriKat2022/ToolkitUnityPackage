@@ -273,7 +273,7 @@ namespace AdriKat.Utils.UIElements
             {
                 if (timer > _successAnimationDuration * (1 - _successAnimationFadeMult))
                 {
-                    color.a = Mathematics.MapTo1_0(timer, _successAnimationDuration * (1 - _successAnimationFadeMult), _successAnimationDuration);
+                    color.a = Mathematics.Mathematics.MapTo1_0(timer, _successAnimationDuration * (1 - _successAnimationFadeMult), _successAnimationDuration);
                     _successIndicator.color = color;
                     _text.color = color;
                 }

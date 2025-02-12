@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace AdriKat.Utils.Mathematics
 {
-    public class Mathematics : MonoBehaviour
+    public class Mathematics
     {
         public enum ClipBehaviour
         {
