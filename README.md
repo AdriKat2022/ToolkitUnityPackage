@@ -6,11 +6,30 @@ Facing this "issue" of copying scripts from other projects (which is not really 
 
 ## Content
 Currently, there isn't much for the majority of games. But I intend to make this package grow in power and make it as much handy as possible.  
-With care and patience, it will even be really useful for production!
+With care and patience, it will even be really useful for production!  
 
 For the moment, here are the current contents of this package.
+
 ### Debugging
-- **LiveLogger class**: Allows easy log display inspired by the UnrealEngine logging system. Offers a new log feedback layer by unclogging the Unity console for specific logs, or straight up if the Unity console is unavailable.  
-- **Text Animation Scripts**: Various ready-to-use text animations, including a rainbow effect only for the moment. These scripts have a pretty much highly tweakable with many options serialized in the editor.  
-- **UI Element Animation Scripts**: Various ready-to-use animations for UI components (anything that has a RectTransform). Including, a button animation script.  
-- **Camera Shake class**: Smart shaking effect that can be used on any Transform, usually the camera. Provides many options to make it as you prefer!
+- **LiveLogger class**: Allows easy log display inspired by the UnrealEngine logging system. Offers a new log feedback layer by unclogging the Unity console for specific logs, or straight up if the Unity console is unavailable.
+
+### Code Patterns
+- **Singleton class**: A simple Singleton pattern implementation.
+- **SingletonThreadSafe class**: A simple Singleton pattern implementation safer when using threading.
+
+### Text Animations
+*Various ready-to-use text animations.*  
+*These scripts have a pretty much highly tweakable with many options serialized in the editor.*  
+- **RainbowTextMeshPro class**: Highly tweakable rainbow effect.  
+
+### Scripted Animations (UI & 3D)
+*Various ready-to-use animations for UI components (anything that has a RectTransform) or for 3D objects.*  
+- **ButtonAnimation class**: Script providing animations like scaling and rotating upon different button events. 
+- **Camera Shake class**: Smart shaking effect that can be used on any Transform, usually the camera. Provides many options to tweak the shake effect.
+
+### UI Elements
+- **HoldAction class**: Script that allows to trigger an action when holding a button for a certain amount of time. Provides many options to tweak the holding visual effect.
+- **SimpleTimer class**: Simple timer that can be used to display a count-up (and a countdown comming soon). Format is automated.
+
+### Others
+- **Mathematics class**: Various math utilities (currently only a method to map a value from a range to another).
