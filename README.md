@@ -4,6 +4,21 @@ I created this Unity package to help me in my various projects.
 I often stumbled upon repeating senarios where I needed a script for a specific mechanic but which is also often required when developing a game (a character controller, a menu system etc.).
 Facing this "issue" of copying scripts from other projects (which is not really an issue but maybe a **threat** to the [DRY principle](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) at a larger scale), I decided to learn how to make a Unity package!
 
+## Installation
+> **1. Access the Unity Package Manager in Unity by clicking on `Window` > `Package Manager`.** 
+
+![Unity PackageManager Context Menu Access](image.png)
+
+> **2. Click on the `+` button and select `Add package from git URL...`.**
+
+![Unity Add Package Git URL](image-1.png)
+
+> **3. Paste the following URL in the input field: `https://github.com/AdriKat2022/UtilsUnityPackage.git`**
+
+> **4. Click on `Install`**
+
+> **5. Profit!**
+
 ## About the code
 Part if the goal of this package is to provide scripts that are easy to use and understand. But also to get better at writing code that is clean, efficient, maintainable and documented.
 
