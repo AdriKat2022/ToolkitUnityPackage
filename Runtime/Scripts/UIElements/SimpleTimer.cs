@@ -8,6 +8,7 @@ namespace AdriKat.Utils.UIElements
     {
         public float TimerValue => _timerValue;
 
+        [SerializeField] private bool _startOnAwake = true;
         [SerializeField] private TextMeshProUGUI _timerValueText;
 
         private bool _isRunning = false;
@@ -39,6 +40,11 @@ namespace AdriKat.Utils.UIElements
             }
 
             _timerValueText.text = "00:00:000";
+
+            if (_startOnAwake)
+            {
+                StartTimer();
+            }
         }
 
         private void Update()
