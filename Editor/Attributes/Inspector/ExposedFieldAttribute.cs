@@ -1,6 +1,6 @@
 using System;
 
-namespace AdriKat.Utils.Attributes
+namespace AdriKat.Toolkit.Attributes
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
     public class ExposedFieldAttribute : Attribute

@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace AdriKat.Utils.UIElements
+namespace AdriKat.Toolkit.UIElements
 {
     public class InstantiateUIElements
     {

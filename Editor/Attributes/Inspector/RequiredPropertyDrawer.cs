@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace AdriKat.Utils.Attributes
+namespace AdriKat.Toolkit.Attributes
 {
     [CustomPropertyDrawer(typeof(RequiredAttribute))]
     public class RequiredPropertyDrawer : PropertyDrawer

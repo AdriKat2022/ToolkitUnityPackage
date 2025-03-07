@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace AdriKat.Utils.Animations
+namespace AdriKat.Toolkit.Animations
 {
     public class ShakeAnimation : MonoBehaviour
     {

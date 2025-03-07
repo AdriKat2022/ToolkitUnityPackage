@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace AdriKat.Utils.CodePatterns
+namespace AdriKat.Toolkit.CodePatterns
 {
     /// <summary>
     /// Singleton pattern implementation.<br/>

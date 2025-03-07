@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace AdriKat.Utils.Attributes
+namespace AdriKat.Toolkit.Attributes
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = false, AllowMultiple = true)]
     public class ReadOnlyAttribute : PropertyAttribute

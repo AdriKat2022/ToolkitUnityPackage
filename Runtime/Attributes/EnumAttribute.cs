@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace AdriKat.Utils.Attributes
+namespace AdriKat.Toolkit.Attributes
 {
     /// <summary>
     /// Attribute to display a field as a toolbar, with specified values.<br/>

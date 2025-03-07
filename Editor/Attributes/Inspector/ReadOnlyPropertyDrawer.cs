@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace AdriKat.Utils.Attributes
+namespace AdriKat.Toolkit.Attributes
 {
     [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
     public class ReadOnlyPropertyDrawer : PropertyDrawer

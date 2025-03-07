@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
-namespace AdriKat.Utils.Debugging
+namespace AdriKat.Toolkit.Debugging
 {
     public class InputDebug : MonoBehaviour
     {

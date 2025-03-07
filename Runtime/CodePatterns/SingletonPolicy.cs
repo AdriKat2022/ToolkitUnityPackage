@@ -1,4 +1,4 @@
-namespace AdriKat.Utils.CodePatterns
+namespace AdriKat.Toolkit.CodePatterns
 {
     public enum SingletonPolicy
     {

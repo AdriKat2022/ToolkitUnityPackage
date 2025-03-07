@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace AdriKat.Utils.Animations
+namespace AdriKat.Toolkit.Animations
 {
     public class ButtonAnimation : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {

@@ -1,10 +1,10 @@
-using AdriKat.Utils.CodePatterns;
+using AdriKat.Toolkit.CodePatterns;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace AdriKat.Utils.Debugging
+namespace AdriKat.Toolkit.Debugging
 {
     /// <summary>
     /// Helper class to log messages on the screen. Useful for debugging purposes, especially on builds where the log might not be visible.<br/>

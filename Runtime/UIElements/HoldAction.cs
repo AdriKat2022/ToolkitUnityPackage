@@ -5,7 +5,7 @@ using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-namespace AdriKat.Utils.UIElements
+namespace AdriKat.Toolkit.UIElements
 {
     /// <summary>
     /// Hold action script that triggers an event when the hold is completed.<br/>

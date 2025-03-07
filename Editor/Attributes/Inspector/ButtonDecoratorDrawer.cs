@@ -3,7 +3,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace AdriKat.Utils.Attributes
+namespace AdriKat.Toolkit.Attributes
 {
     [CustomEditor(typeof(MonoBehaviour), true)]
     public class ButtonDecoratorDrawer : Editor

@@ -2,7 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace AdriKat.Utils.Attributes
+namespace AdriKat.Toolkit.Attributes
 {
     [CustomPropertyDrawer(typeof(EnumAttribute))]
     public class EnumPropertyDrawer : PropertyDrawer

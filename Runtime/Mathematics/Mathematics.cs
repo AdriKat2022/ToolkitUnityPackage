@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace AdriKat.Utils.Mathematics
+namespace AdriKat.Toolkit.Mathematics
 {
     public class Mathematics
     {

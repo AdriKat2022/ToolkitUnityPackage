@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace AdriKat.Utils.Attributes
+namespace AdriKat.Toolkit.Attributes
 {
     /// <summary>
     /// Attribute to make a method appear as a button in the inspector.
