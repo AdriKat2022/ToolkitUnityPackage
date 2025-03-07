@@ -7,6 +7,10 @@ namespace AdriKat.Utils.Attributes
     {
         public readonly string DisplayName;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="displayName"></param>
         public ExposedFieldAttribute(string displayName)
         {
             DisplayName = displayName;
