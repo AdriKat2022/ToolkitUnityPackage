@@ -1,7 +1,8 @@
 {
-  "name": "com.adrikat.utils",
+  "name": "com.adrikat.toolkit",
   "version": "1.4.0",
-  "displayName": "UtilsScripts",
+  "displayName": "AdriKat Toolkit",
+  "description": "A collection of tools to help you develop your Unity projects faster.",
   "author": {
     "name": "AdriKat",
     "email": "adrien.schroedel@gmail.com",
