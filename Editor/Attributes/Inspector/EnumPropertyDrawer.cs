@@ -32,6 +32,15 @@ namespace AdriKat.Toolkit.Attributes
                 }
                 DrawIntToolbar(position, property, label, enumAttribute.IntValues);
             }
+            else if (property.propertyType == SerializedPropertyType.Float)
+            {
+                if (enumAttribute.FloatValues == null || enumAttribute.FloatValues.Length == 0)
+                {
+                    EditorGUI.LabelField(position, label.text, "EnumAttribute requires at least one float value.");
+                    return;
+                }
+                DrawFloatToolbar(position, property, label, enumAttribute.FloatValues);
+            }
             else if (property.propertyType == SerializedPropertyType.Boolean)
             {
                 DrawBoolToolbar(position, property, label, enumAttribute);
@@ -120,6 +129,48 @@ namespace AdriKat.Toolkit.Attributes
                 if (GUI.Button(buttonRect, values[i].ToString(), buttonStyle))
                 {
                     property.intValue = values[i];
+                }
+            }
+
+            EditorGUI.EndProperty();
+        }
+
+        // Draws toolbar-style buttons for float values
+        private void DrawFloatToolbar(Rect position, SerializedProperty property, GUIContent label, float[] values)
+        {
+            // Define the width of each button based on the total available space
+            float buttonWidth = position.width / values.Length;
+
+            int selectedIndex = Array.IndexOf(values, property.floatValue);
+            if (selectedIndex == -1) selectedIndex = 0;
+
+            EditorGUI.BeginProperty(position, label, property);
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                Rect buttonRect = new Rect(position.x + (i * buttonWidth), position.y, buttonWidth, position.height);
+                bool isSelected = (selectedIndex == i);
+
+                // Create a new style for the button
+                GUIStyle buttonStyle = isSelected ? new GUIStyle(GUI.skin.box) : new GUIStyle(GUI.skin.button);
+                buttonStyle.padding = new RectOffset(2, 2, 2, 2);
+
+                // Set the background color for selected buttons
+                if (isSelected)
+                {
+                    buttonStyle.onNormal.background = MakeTexture(2, 2, selectedBackgroundColor);
+                    buttonStyle.normal.textColor = Color.yellow;
+                    buttonStyle.fontStyle = FontStyle.Bold;
+                }
+                else
+                {
+                    buttonStyle.onNormal.background = MakeTexture(2, 2, unselectedBackgroundColor);
+                    buttonStyle.fontStyle = FontStyle.Normal;
+                }
+
+                if (GUI.Button(buttonRect, values[i].ToString(), buttonStyle))
+                {
+                    property.floatValue = values[i];
                 }
             }
 

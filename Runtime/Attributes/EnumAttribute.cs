@@ -11,6 +11,7 @@ namespace AdriKat.Toolkit.Attributes
     {
         public string[] StringValues { get; }
         public int[] IntValues { get; }
+        public float[] FloatValues { get; }
         /// <summary>
         /// Attribute to display a field as a toolbar, with specified values.<br/>
         /// Only supports string, int, and bool fields.<br/>
@@ -25,5 +26,12 @@ namespace AdriKat.Toolkit.Attributes
         /// </summary>
         /// <param name="values"></param>
         public EnumAttribute(params int[] values) => IntValues = values;
+        /// <summary>
+        /// Attribute to display a field as a toolbar, with specified values.<br/>
+        /// Only supports string, int, and bool fields.<br/>
+        /// Use this constructor for int fields.
+        /// </summary>
+        /// <param name="values"></param>
+        public EnumAttribute(params float[] values) => FloatValues = values;
     }
 }
