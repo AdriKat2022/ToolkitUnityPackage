@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -7,15 +6,6 @@ namespace AdriKat.Toolkit.Attributes
     [CustomPropertyDrawer(typeof(RequiredAttribute))]
     public class RequiredPropertyDrawer : PropertyDrawer
     {
-        // readonly dictionaries for colors
-
-        private Dictionary<RequiredAttribute.WarningTypeEnum, Color> _colors = new()
-    {
-        { RequiredAttribute.WarningTypeEnum.Error, new Color(1f, .5f, .4f) },
-        { RequiredAttribute.WarningTypeEnum.Warning, Color.yellow },
-        { RequiredAttribute.WarningTypeEnum.Info, new Color(.75f, 1, 1) }
-    };
-
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             RequiredAttribute requiredAttribute = (RequiredAttribute)attribute;
@@ -24,8 +14,8 @@ namespace AdriKat.Toolkit.Attributes
 
             if (isInvalid)
             {
-                // Change color to indicate error
-                GUI.color = _colors[requiredAttribute.WarningType];
+                // Change color to indicate an error.
+                GUI.color = GlobalConstants.GetColorFromWarningType(requiredAttribute.WarningType);
             }
 
             // Draw the property field
