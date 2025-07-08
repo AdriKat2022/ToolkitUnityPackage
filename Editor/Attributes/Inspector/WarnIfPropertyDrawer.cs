@@ -9,30 +9,43 @@ namespace AdriKat.Toolkit.Attributes
     [CustomPropertyDrawer(typeof(WarnIfAttribute))]
     public class WarnIfPropertyDrawer : PropertyDrawer
     {
-        private readonly Dictionary<string, AnimBool> _fadeAnimations = new();
-
-        private const float X_PADDING = 20f;
-        private const float Y_PADDING = 4f;
-        
         private float _helpBoxCurrentFade;
         private float _helpBoxPreferredHeight;
         private bool _currentCondition;
         
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            WarnIfAttribute warnIfAttribute = ((WarnIfAttribute)attribute);
+            
+            float boxStylingYPadding = warnIfAttribute.BoxStyling.yPadding;
+            
+            // Smooth height transition
+            float propertyHeight = EditorGUI.GetPropertyHeight(property, label, true);
+            
+            _helpBoxPreferredHeight = GetHelpBoxHeight(warnIfAttribute.WarningMessage, EditorGUIUtility.currentViewWidth - warnIfAttribute.BoxStyling.xPadding) + warnIfAttribute.BoxStyling.additionalBoxHeight;
+            _currentCondition = EditorUtils.CheckConditionFromObject(property.serializedObject, warnIfAttribute.ConditionName);
+            _helpBoxCurrentFade = EditorUtils.GetBoolAnimationFade(property.GetUniqueIDFromProperty(), _currentCondition, 2f);
+            
+            float finalHeight = _helpBoxCurrentFade * (_helpBoxPreferredHeight + boxStylingYPadding) + propertyHeight;
+            
+            return finalHeight;
+        }
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             WarnIfAttribute warnIfAttribute = (WarnIfAttribute)attribute;
+
+            float fieldHeight = EditorGUI.GetPropertyHeight(property, label, true);
+            float boxStylingXPadding = warnIfAttribute.BoxStyling.xPadding;
+            float boxStylingYPadding = warnIfAttribute.BoxStyling.yPadding;
             
-            _helpBoxPreferredHeight = Mathf.Max(
-                EditorGUIUtility.singleLineHeight * 2f,
-                GetHelpBoxHeight(warnIfAttribute.WarningMessage, position.width - X_PADDING) + warnIfAttribute.AdditionalHeightPadding);
+            Rect messageBoxRect = position;
+            messageBoxRect.height -= fieldHeight;
+            messageBoxRect.xMin += boxStylingXPadding;
+            HandleMessageBoxFade(messageBoxRect, property, warnIfAttribute.WarningType, warnIfAttribute.WarningMessage, _currentCondition);
             
-            _currentCondition = EditorUtils.CheckConditionFromObject(property.serializedObject, warnIfAttribute.ConditionName);
-            
-            HandleMessageBoxFade(position, property, warnIfAttribute.WarningType, warnIfAttribute.WarningMessage, _currentCondition);
-            
-            position.y += (_helpBoxPreferredHeight + Y_PADDING) * _helpBoxCurrentFade;
-            position.height = EditorGUI.GetPropertyHeight(property, label, true);
-            
+            position.y += messageBoxRect.height + boxStylingYPadding;
+            position.height -= messageBoxRect.height;
             EditorGUI.PropertyField(position, property, label, true);
         }
         
@@ -44,24 +57,12 @@ namespace AdriKat.Toolkit.Attributes
             
             // Smooth height transition
             float height = faded * _helpBoxPreferredHeight;
-
-            position.xMin += X_PADDING;
             
             Rect fadeRect = new Rect(position.x, position.y, position.width, height);
-            if (faded > 0.5f)
+            if (faded > 0.1f)
             {
                 EditorGUI.HelpBox(fadeRect, warningMessage, (MessageType)warningType);
             }
-        }
-        
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
-        {
-            // Smooth height transition
-            float propertyHeight = EditorGUI.GetPropertyHeight(property, label, true);
-            
-            float finalHeight = _helpBoxCurrentFade * (_helpBoxPreferredHeight + Y_PADDING) + propertyHeight;
-            
-            return finalHeight;
         }
         
         private static float GetHelpBoxHeight(string warningMessage, float width)

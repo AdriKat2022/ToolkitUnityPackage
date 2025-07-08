@@ -14,6 +14,7 @@ namespace AdriKat.Toolkit.Utils
         /// </summary>
         public static void RepaintAllInspectors()
         {
+            // Debug.Log("REPAINT");
             // Find all Inspector windows and repaint them
             var inspectorType = typeof(Editor).Assembly.GetType("UnityEditor.InspectorWindow");
             var windows = Resources.FindObjectsOfTypeAll(inspectorType);
@@ -24,6 +25,7 @@ namespace AdriKat.Toolkit.Utils
 
                 if (inspector)
                 {
+                    // Debug.Log("Repainting inspector");
                     inspector.Repaint();
                 }
             }
@@ -44,11 +46,11 @@ namespace AdriKat.Toolkit.Utils
             var method = targetObject.GetType().GetMethod(conditionName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
             if (method != null)
             {
-                if (method.ReturnType == typeof(bool))
+                if (method.ReturnType == typeof(bool) && method.GetParameters().Length == 0)
                 {
                     return (bool)method.Invoke(targetObject, null);
                 }
-                Debug.LogError($"WarnAttribute: \"{conditionName}\" must return a boolean value!");
+                Debug.LogError($"WarnAttribute: \"{conditionName}\" must return a boolean value and have no parameters!", serializedObject.targetObject);
                 return false;
             }
             
@@ -59,17 +61,19 @@ namespace AdriKat.Toolkit.Utils
                 {
                     return (bool)field.GetValue(targetObject);
                 }
-                Debug.LogError($"WarnAttribute: \"{conditionName}\" is not a boolean field!");
+                Debug.LogError($"WarnAttribute: \"{conditionName}\" is not a boolean field!", serializedObject.targetObject);
                 return false;
             }
 
-            Debug.LogError($"WarnAttribute: \"{conditionName}\" cannot be found or isn't supported!\nOnly bool fields and methods returning bool are supported.");
+            Debug.LogError($"WarnAttribute: \"{conditionName}\" cannot be found or isn't supported!\nOnly bool fields and methods returning bool are supported.", serializedObject.targetObject);
             
             return false;
         }
 
         public static float GetBoolAnimationFade(string key, bool targetState, float speed = 1f)
         {
+            if (string.IsNullOrEmpty(key)) return 0;
+            
             if (!_fadeAnimations.TryGetValue(key, out AnimBool fade))
             {
                 // It doesn't exist, so we create it.
@@ -77,7 +81,7 @@ namespace AdriKat.Toolkit.Utils
                 {
                     speed = speed
                 };
-                fade.valueChanged.AddListener(RepaintAllInspectors);
+                // fade.valueChanged.AddListener(RepaintAllInspectors);
                 
                 _fadeAnimations[key] = fade;
             }
