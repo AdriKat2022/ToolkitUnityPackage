@@ -20,9 +20,10 @@ namespace AdriKat.Toolkit.Attributes
         public WarnIfAttribute(
             string conditionName,
             string warningMessage,
+            bool showAfter = false,
             float xPadding = 0,
-            float yPadding = 4,
-            float additionalBoxHeight = 10,
+            float yPadding = 0,
+            float additionalBoxHeight = 0,
             WarningTypeEnum warningType = WarningTypeEnum.Warning
             )
         {
@@ -30,7 +31,7 @@ namespace AdriKat.Toolkit.Attributes
             WarningMessage = warningMessage;
             WarningType = warningType;
             
-            BoxStyling = new BoxStyle(xPadding, yPadding, additionalBoxHeight + 15);
+            BoxStyling = new BoxStyle(xPadding, yPadding, additionalBoxHeight + 15, showAfter);
         }
 
         public struct BoxStyle
@@ -38,12 +39,14 @@ namespace AdriKat.Toolkit.Attributes
             public readonly float xPadding;
             public readonly float yPadding;
             public readonly float additionalBoxHeight;
+            public readonly bool showAfter;
             
-            public BoxStyle(float xPadding, float yPadding, float additionalBoxHeight)
+            public BoxStyle(float xPadding, float yPadding, float additionalBoxHeight, bool showAfter)
             {
                 this.xPadding = xPadding;
                 this.yPadding = yPadding;
                 this.additionalBoxHeight = additionalBoxHeight;
+                this.showAfter = showAfter;
             }
         }
     }

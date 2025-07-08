@@ -19,14 +19,13 @@ namespace AdriKat.Toolkit.Attributes
             
             float boxStylingYPadding = warnIfAttribute.BoxStyling.yPadding;
             
-            // Smooth height transition
-            float propertyHeight = EditorGUI.GetPropertyHeight(property, label, true);
+            float fieldHeight = base.GetPropertyHeight(property, label) + EditorGUIUtility.standardVerticalSpacing;
             
             _helpBoxPreferredHeight = GetHelpBoxHeight(warnIfAttribute.WarningMessage, EditorGUIUtility.currentViewWidth - warnIfAttribute.BoxStyling.xPadding) + warnIfAttribute.BoxStyling.additionalBoxHeight;
             _currentCondition = EditorUtils.CheckConditionFromObject(property.serializedObject, warnIfAttribute.ConditionName);
             _helpBoxCurrentFade = EditorUtils.GetBoolAnimationFade(property.GetUniqueIDFromProperty(), _currentCondition, 2f);
             
-            float finalHeight = _helpBoxCurrentFade * (_helpBoxPreferredHeight + boxStylingYPadding) + propertyHeight;
+            float finalHeight = _helpBoxCurrentFade * (_helpBoxPreferredHeight + boxStylingYPadding) + fieldHeight;
             
             return finalHeight;
         }
@@ -35,18 +34,29 @@ namespace AdriKat.Toolkit.Attributes
         {
             WarnIfAttribute warnIfAttribute = (WarnIfAttribute)attribute;
 
-            float fieldHeight = EditorGUI.GetPropertyHeight(property, label, true);
+            float fieldHeight = base.GetPropertyHeight(property, label) + EditorGUIUtility.standardVerticalSpacing;
             float boxStylingXPadding = warnIfAttribute.BoxStyling.xPadding;
             float boxStylingYPadding = warnIfAttribute.BoxStyling.yPadding;
             
+            // Make MessageBox rect
             Rect messageBoxRect = position;
-            messageBoxRect.height -= fieldHeight;
             messageBoxRect.xMin += boxStylingXPadding;
-            HandleMessageBoxFade(messageBoxRect, property, warnIfAttribute.WarningType, warnIfAttribute.WarningMessage, _currentCondition);
+            messageBoxRect.height -= fieldHeight;
             
-            position.y += messageBoxRect.height + boxStylingYPadding;
-            position.height -= messageBoxRect.height;
-            EditorGUI.PropertyField(position, property, label, true);
+            // Make Field rect
+            Rect fieldRect = position;
+            fieldRect.y += messageBoxRect.height + boxStylingYPadding * _helpBoxCurrentFade;
+            fieldRect.height = fieldHeight;
+
+            if (warnIfAttribute.BoxStyling.showAfter)
+            {
+                // Switch position the field and the box.
+                messageBoxRect.y += fieldRect.height;
+                fieldRect.y -= messageBoxRect.height;
+            }
+            
+            HandleMessageBoxFade(messageBoxRect, property, warnIfAttribute.WarningType, warnIfAttribute.WarningMessage, _currentCondition);
+            EditorGUI.PropertyField(fieldRect, property, label, true);
         }
         
         private void HandleMessageBoxFade(Rect position, SerializedProperty property, WarningTypeEnum warningType, string warningMessage, bool shouldShow)

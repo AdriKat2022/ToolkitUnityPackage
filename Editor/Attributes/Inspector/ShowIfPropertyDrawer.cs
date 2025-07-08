@@ -9,8 +9,29 @@ namespace AdriKat.Toolkit.Attributes
     [CustomPropertyDrawer(typeof(ShowIfAttribute))]
     public class ShowIfPropertyDrawer : PropertyDrawer
     {
-        private readonly Dictionary<string, AnimBool> _fadeAnimations = new();
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            ShowIfAttribute showIfAttribute = (ShowIfAttribute)attribute;
+            
+            if (showIfAttribute.ShowDisabledField)
+            {
+                return (EditorGUI.GetPropertyHeight(property, label, true) + EditorGUIUtility.standardVerticalSpacing);
+            }
+            
+            string variableName = showIfAttribute.VariableName;
 
+            bool shouldShow = EditorUtils.CheckConditionFromObject(property.serializedObject, variableName);
+            if (showIfAttribute.Invert)
+            {
+                shouldShow = !shouldShow;
+            }
+            
+            float faded = EditorUtils.GetBoolAnimationFade(property.GetUniqueIDFromProperty(), shouldShow, 2f);
+
+            // Smooth height transition
+            return faded * (EditorGUI.GetPropertyHeight(property, label, true) + EditorGUIUtility.standardVerticalSpacing);
+        }
+        
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             ShowIfAttribute showIfAttribute = (ShowIfAttribute)attribute;
@@ -46,29 +67,6 @@ namespace AdriKat.Toolkit.Attributes
             {
                 EditorGUI.PropertyField(fadeRect, property, label, true);
             }
-        }
-
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
-        {
-            ShowIfAttribute showIfAttribute = (ShowIfAttribute)attribute;
-            
-            if (showIfAttribute.ShowDisabledField)
-            {
-                return EditorGUI.GetPropertyHeight(property, label, true);
-            }
-            
-            string variableName = showIfAttribute.VariableName;
-
-            bool shouldShow = EditorUtils.CheckConditionFromObject(property.serializedObject, variableName);
-            if (showIfAttribute.Invert)
-            {
-                shouldShow = !shouldShow;
-            }
-            
-            float faded = EditorUtils.GetBoolAnimationFade(property.GetUniqueIDFromProperty(), shouldShow, 2f);
-
-            // Smooth height transition
-            return faded * EditorGUI.GetPropertyHeight(property, label, true);
         }
     }
 }
