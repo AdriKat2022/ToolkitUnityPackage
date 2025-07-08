@@ -57,16 +57,15 @@ namespace AdriKat.Toolkit.Attributes
 
         private void ManageFadeAnimation(Rect position, SerializedProperty property, GUIContent label, bool shouldShow)
         {
-            float faded = EditorUtils.GetBoolAnimationFade(property.GetUniqueIDFromProperty(), shouldShow, 2f);
-            
-            // Smooth height transition
-            float height = faded * EditorGUI.GetPropertyHeight(property, label, true);
+            float fade = EditorUtils.GetBoolAnimationFade(property.GetUniqueIDFromProperty(), shouldShow, 2f);
 
-            Rect fadeRect = new Rect(position.x, position.y, position.width, height);
-            if (faded > 0.5f)
+            // Get the full height the property would take at full opacity
+            float fullHeight = EditorGUI.GetPropertyHeight(property, label, true) + EditorGUIUtility.standardVerticalSpacing;
+
+            EditorDrawUtils.DrawClippedFadeGroup(position, fade, fullHeight, rect =>
             {
-                EditorGUI.PropertyField(fadeRect, property, label, true);
-            }
+                EditorGUI.PropertyField(rect, property, label, true);
+            }, applyAlpha: true);
         }
     }
 }

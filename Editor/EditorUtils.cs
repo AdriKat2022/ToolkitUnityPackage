@@ -30,13 +30,14 @@ namespace AdriKat.Toolkit.Utils
                 }
             }
         }
-        
+
         /// <summary>
-        /// Get a boolean value from a method or field from an instanced object.
+        /// Evaluates a condition on a serialized object by checking for a boolean field or method
+        /// matching the specified condition name.
         /// </summary>
-        /// <param name="serializedObject">The object-instance to check.</param>
-        /// <param name="conditionName">The name of the bool-returning method or bool field.</param>
-        /// <returns>The value of the bool field or the value returned by the method.</returns>
+        /// <param name="serializedObject">The serialized object containing the condition to evaluate.</param>
+        /// <param name="conditionName">The name of the field or method to check within the serialized object.</param>
+        /// <returns>True if the condition is valid and evaluates to true; otherwise, false.</returns>
         public static bool CheckConditionFromObject(SerializedObject serializedObject, string conditionName)
         {
             if (serializedObject == null || string.IsNullOrEmpty(conditionName)) return false;
@@ -70,10 +71,18 @@ namespace AdriKat.Toolkit.Utils
             return false;
         }
 
+        /// <summary>
+        /// Retrieves the current "fade" value of a boolean animation associated with the specified key,
+        /// creating or updating the animation if necessary.
+        /// </summary>
+        /// <param name="key">The unique identifier for the animation.</param>
+        /// <param name="targetState">The desired target state of the animation (true or false).</param>
+        /// <param name="speed">The transition speed of the animation. Defaults to 1.</param>
+        /// <returns>The current "fade" value of the animation, which represents the interpolation between states.</returns>
         public static float GetBoolAnimationFade(string key, bool targetState, float speed = 1f)
         {
             if (string.IsNullOrEmpty(key)) return 0;
-            
+
             if (!_fadeAnimations.TryGetValue(key, out AnimBool fade))
             {
                 // It doesn't exist, so we create it.
@@ -81,7 +90,7 @@ namespace AdriKat.Toolkit.Utils
                 {
                     speed = speed
                 };
-                // fade.valueChanged.AddListener(RepaintAllInspectors);
+                fade.valueChanged.AddListener(RepaintAllInspectors);
                 
                 _fadeAnimations[key] = fade;
             }
@@ -92,7 +101,12 @@ namespace AdriKat.Toolkit.Utils
             
             return fade.faded;
         }
-        
+
+        /// <summary>
+        /// Generates a unique identifier for a SerializedProperty based on its serialized object's instance ID and property path.
+        /// </summary>
+        /// <param name="property">The SerializedProperty for which the unique identifier is generated.</param>
+        /// <returns>A string representing the unique identifier of the property.</returns>
         public static string GetUniqueIDFromProperty(this SerializedProperty property)
         {
             return $"{property.serializedObject.targetObject.GetInstanceID()}_{property.propertyPath}";
