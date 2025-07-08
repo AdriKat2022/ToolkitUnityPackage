@@ -61,9 +61,12 @@ namespace AdriKat.Toolkit.Attributes
 
             // Get the full height the property would take at full opacity
             float fullHeight = EditorGUI.GetPropertyHeight(property, label, true) + EditorGUIUtility.standardVerticalSpacing;
-
+            float labelWidth = EditorGUIUtility.labelWidth;
+            
             EditorDrawUtils.DrawClippedFadeGroup(position, fade, fullHeight, rect =>
             {
+                // Restore labelWidth (it can change when entering a group).
+                EditorGUIUtility.labelWidth = labelWidth;
                 EditorGUI.PropertyField(rect, property, label, true);
             }, applyAlpha: true);
         }
