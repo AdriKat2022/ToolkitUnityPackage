@@ -90,7 +90,13 @@ namespace AdriKat.Toolkit.Utils
                 {
                     speed = speed
                 };
-                fade.valueChanged.AddListener(RepaintAllInspectors);
+                fade.valueChanged.AddListener(() => // Trigger repaint only if still animating
+                {
+                    if (EditorWindow.focusedWindow)
+                    {
+                        EditorWindow.focusedWindow.Repaint();
+                    }
+                });
                 
                 _fadeAnimations[key] = fade;
             }
