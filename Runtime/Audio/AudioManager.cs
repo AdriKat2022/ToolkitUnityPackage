@@ -1,22 +1,22 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
-using AdriKat.Toolkit.Attributes;
 using AdriKat.Toolkit.CodePatterns;
 using AdriKat.Toolkit.Utility;
 
 namespace AdriKat.Toolkit.Audio
 {
-    [AddComponentMenu("TK/Audio/AudioManager")]
+    [AddComponentMenu("TK/Audio/Audio Manager")]
     public class AudioManager : Singleton<AudioManager>
     {
+        [Header("Audio Database")]
         public AudioDatabase database;
-        [SerializeField, ShowIf(nameof(database))]
-        protected bool loadSoundClipDataDatabaseOnAwake = true;
+        [SerializeField]
+        protected bool loadAudioDatabaseOnAwake = true;
 
-        public AudioSource sfxSource;
+        [Header("Sources")]
         public AudioSource musicSource;
+        public AudioSource sfxSource;
 
         private Dictionary<string, AudioData> audioDictionary;
         
@@ -26,7 +26,7 @@ namespace AdriKat.Toolkit.Audio
         {
             base.Awake();
             
-            if (loadSoundClipDataDatabaseOnAwake)
+            if (loadAudioDatabaseOnAwake)
             {
                 LoadSoundClipDataDatabase();
             }
@@ -104,5 +104,36 @@ namespace AdriKat.Toolkit.Audio
         }
 
         #endregion
+        
+        #if UNITY_EDITOR
+        
+        [UnityEditor.MenuItem("GameObject/Audio/Audio Manager")]
+        private static void SpawnAudioManager(UnityEditor.MenuCommand menuCommand)
+        {
+            // Create a new GameObject
+            GameObject go = new GameObject("Audio Manager");
+            var audioManager = go.AddComponent<AudioManager>();
+            
+            UnityEditor.GameObjectUtility.SetParentAndAlign(go, menuCommand.context as GameObject);
+            
+            GameObject musicSource = new GameObject("Music Source");
+            var music = musicSource.AddComponent<AudioSource>();
+            GameObject sfxSource = new GameObject("SFX Source");
+            var sfx = sfxSource.AddComponent<AudioSource>();
+            
+            audioManager.musicSource = music;
+            audioManager.sfxSource = sfx;
+            
+            UnityEditor.GameObjectUtility.SetParentAndAlign(musicSource, go);
+            UnityEditor.GameObjectUtility.SetParentAndAlign(sfxSource, go);
+        
+            // Register undo and select the object
+            UnityEditor.Undo.RegisterCreatedObjectUndo(go, "Created Audio Manager");
+            UnityEditor.Selection.activeObject = go;
+        }
+        
+        
+        
+        #endif
     }
 }
