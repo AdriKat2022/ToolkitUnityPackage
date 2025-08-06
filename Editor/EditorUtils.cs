@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using AdriKat.Toolkit.Utility;
 using UnityEditor;
 using UnityEditor.AnimatedValues;
 using UnityEngine;
@@ -16,7 +18,7 @@ namespace AdriKat.Toolkit.Utils
         {
             // Debug.Log("REPAINT");
             // Find all Inspector windows and repaint them
-            var inspectorType = typeof(Editor).Assembly.GetType("UnityEditor.InspectorWindow");
+            var inspectorType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.InspectorWindow");
             var windows = Resources.FindObjectsOfTypeAll(inspectorType);
 
             foreach (var window in windows)
@@ -43,10 +45,14 @@ namespace AdriKat.Toolkit.Utils
             if (serializedObject == null || string.IsNullOrEmpty(conditionName)) return false;
             
             var targetObject = serializedObject.targetObject;
+
+            Type parentObjectType = targetObject.GetType();
             
-            var method = targetObject.GetType().GetMethod(conditionName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
+            // Try for method.
+            var method = parentObjectType.GetMethod(conditionName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
             if (method != null)
             {
+                // Check if it's a bool method and has no parameters.
                 if (method.ReturnType == typeof(bool) && method.GetParameters().Length == 0)
                 {
                     return (bool)method.Invoke(targetObject, null);
@@ -55,18 +61,23 @@ namespace AdriKat.Toolkit.Utils
                 return false;
             }
             
-            var field = targetObject.GetType().GetField(conditionName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
+            // Try for field.
+            var field = parentObjectType.GetField(conditionName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
             if (field != null)
             {
                 if (field.FieldType == typeof(bool))
                 {
                     return (bool)field.GetValue(targetObject);
                 }
-                Debug.LogError($"WarnAttribute: \"{conditionName}\" is not a boolean field!", serializedObject.targetObject);
+                if (field.FieldType.IsClass)
+                {
+                    return field.GetValue(targetObject) != null;
+                }
+                Debug.LogError($"WarnAttribute: \"{conditionName}\" is not a boolean field or a object field!", serializedObject.targetObject);
                 return false;
             }
 
-            Debug.LogError($"WarnAttribute: \"{conditionName}\" cannot be found or isn't supported!\nOnly bool fields and methods returning bool are supported.", serializedObject.targetObject);
+            Debug.LogError($"WarnAttribute: \"{conditionName}\" cannot be found or isn't supported!\nOnly bool fields, class fields, and parameterless methods returning a bool are supported.", serializedObject.targetObject);
             
             return false;
         }
@@ -117,5 +128,55 @@ namespace AdriKat.Toolkit.Utils
         {
             return $"{property.serializedObject.targetObject.GetInstanceID()}_{property.propertyPath}";
         }
+
+        /// <summary>
+        /// Finds the file path of the script associated with a specific type.
+        /// </summary>
+        /// <param name="type">The type for which the script file path is to be located.</param>
+        /// <returns>The file path of the script if found; otherwise, null.</returns>
+        public static string FindScriptFilePath(Type type)
+        {
+            string[] guids = AssetDatabase.FindAssets($"{type.Name} t:script");
+
+            foreach (string guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                MonoScript monoScript = AssetDatabase.LoadAssetAtPath<MonoScript>(path);
+
+                if (monoScript != null && monoScript.GetClass() == type)
+                {
+                    return path;
+                }
+            }
+
+            Debug.LogWarning($"Script file for type {type.FullName} not found.");
+            return null;
+        }
+        
+        #region Folders
+
+        public static void CreateFoldersRecursively(string path)
+        {
+            if (path.IsNullOrEmpty()) return;
+
+            string[] folders = path.Split(new[] { '/', '\\' });
+            string currentPath = "";
+
+            foreach (string folder in folders)
+            {
+                if (folder.IsNullOrEmpty()) continue;
+
+                currentPath = currentPath.IsNullOrEmpty() ? folder : $"{currentPath}/{folder}";
+
+                if (!AssetDatabase.IsValidFolder(currentPath))
+                {
+                    string parentPath = System.IO.Path.GetDirectoryName(currentPath);
+                    string folderName = System.IO.Path.GetFileName(currentPath);
+                    AssetDatabase.CreateFolder(parentPath, folderName);
+                }
+            }
+        }
+        
+        #endregion
     }
 }

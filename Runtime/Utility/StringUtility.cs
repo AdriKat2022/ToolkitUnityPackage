@@ -1,7 +1,14 @@
 namespace AdriKat.Toolkit.Utility
 {
-    public static class TextUtility
+    public static class StringUtility
     {
+        public static bool IsNullOrEmpty(this string text)
+        {
+            return string.IsNullOrEmpty(text);
+        }
+        
+        #region Whitespaces
+        
         public static bool IsWhitespace(this char character)
         {
             switch (character)
@@ -90,5 +97,7 @@ namespace AdriKat.Toolkit.Utility
 
             return new string(textCharacters, 0, currentWhitespacelessTextLength);
         }
+        
+        #endregion
     }
 }
