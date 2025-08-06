@@ -4,6 +4,7 @@ using AdriKat.Toolkit.Utility;
 using UnityEditor;
 using UnityEditor.AnimatedValues;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace AdriKat.Toolkit.Utils
 {
@@ -82,6 +83,24 @@ namespace AdriKat.Toolkit.Utils
             return false;
         }
 
+        public static Object CreateObjectFromFunction(SerializedObject serializedObject, string functionName)
+        {
+            if (serializedObject == null || string.IsNullOrEmpty(functionName)) return null;
+            
+            var targetObject = serializedObject.targetObject;
+            Type parentObjectType = targetObject.GetType();
+            
+            var method = parentObjectType.GetMethod(functionName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
+            if (method != null)
+            {
+                return (Object)method.Invoke(targetObject, null);
+            }
+            
+            Debug.LogError($"\"{functionName}\" cannot be found or isn't supported!\nOnly methods returning an object are supported.", serializedObject.targetObject);
+            
+            return null;
+        }
+        
         /// <summary>
         /// Retrieves the current "fade" value of a boolean animation associated with the specified key,
         /// creating or updating the animation if necessary.
