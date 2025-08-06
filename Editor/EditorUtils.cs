@@ -85,7 +85,7 @@ namespace AdriKat.Toolkit.Utils
 
         public static Object CreateObjectFromFunction(SerializedObject serializedObject, string functionName)
         {
-            if (serializedObject == null || string.IsNullOrEmpty(functionName)) return null;
+            if (serializedObject == null || functionName.IsNullOrEmpty()) return null;
             
             var targetObject = serializedObject.targetObject;
             Type parentObjectType = targetObject.GetType();

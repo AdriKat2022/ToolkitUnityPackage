@@ -1,12 +1,12 @@
 {
   "name": "com.adrikat.toolkit",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "displayName": "AdriKat Toolkit",
   "description": "A collection of tools to help you develop your Unity projects faster.",
   "author": {
     "name": "AdriKat",
     "email": "adrien.schroedel@gmail.com",
-    "url": "https://adrikat2022.github.io/portfolio/"
+    "url": "https://github.com/AdriKat2022/ToolkitUnityPackage"
   },
   "dependencies": {
     "com.unity.textmeshpro": "3.0.4"
