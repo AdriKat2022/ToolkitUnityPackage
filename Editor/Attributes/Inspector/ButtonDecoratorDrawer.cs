@@ -20,15 +20,15 @@ namespace AdriKat.Toolkit.Attributes
 
             foreach (MethodInfo method in methods)
             {
-                ButtonActionAttribute buttonAttribute = (ButtonActionAttribute)Attribute.GetCustomAttribute(method, typeof(ButtonActionAttribute));
+                OldButtonActionAttribute oldButtonAttribute = (OldButtonActionAttribute)Attribute.GetCustomAttribute(method, typeof(OldButtonActionAttribute));
 
-                if (buttonAttribute == null)
+                if (oldButtonAttribute == null)
                 {
                     continue;
                 }
 
                 GUILayout.Space(2);
-                if (GUILayout.Button(buttonAttribute.Name))
+                if (GUILayout.Button(oldButtonAttribute.Name))
                 {
                     method.Invoke(targetScript, null);
                 }

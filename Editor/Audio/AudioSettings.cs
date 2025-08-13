@@ -18,7 +18,7 @@ namespace AdriKat.Toolkit.Audio
         [Tooltip("The path of the generated AudioIDs class by default.\nIf the file already exists, it will be overwritten in place without changing its current path.")]
         public string audioIDClassPath = "Assets/Audio/AudioIDs.cs";
 
-        [ButtonAction(nameof(RefreshAudioIDs))]
+        [OldButtonAction(nameof(RefreshAudioIDs))]
         private void RefreshAudioIDs()
         {
             AudioIDGenerator.GenerateAudioIDClass();

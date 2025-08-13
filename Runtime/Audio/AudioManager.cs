@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
+using AdriKat.Toolkit.Attributes;
 using AdriKat.Toolkit.CodePatterns;
 using AdriKat.Toolkit.Utility;
 
@@ -15,9 +16,13 @@ namespace AdriKat.Toolkit.Audio
         protected bool loadAudioDatabaseOnAwake = true;
 
         [Header("Sources")]
-        public AudioSource musicSource;
-        public AudioSource sfxSource;
+        public AudioSource[] sources;
 
+        [Space]
+        // [OldButtonAction(nameof(CreateNewChannel))]
+        public int defaultMusicChannel = 0;
+        public int defaultSFXChannel = 1;
+        
         private Dictionary<string, AudioData> audioDictionary;
         
         #region Initialization
@@ -48,13 +53,34 @@ namespace AdriKat.Toolkit.Audio
 
         public void StopMusic(float fadeOutDuration = 0.3f)
         {
-            StartCoroutine(FadeOutMusicCoroutine(musicSource, fadeOutDuration, musicSource.volume));
+            AudioSource audioSource = GetSource(defaultMusicChannel);
+            StartCoroutine(FadeOutMusicCoroutine(audioSource, fadeOutDuration, audioSource.volume));
+        }
+
+        public void StopMusic(int channel, float fadeOutDuration = 0.3f)
+        {
+            AudioSource audioSource = GetSource(channel);
+            StartCoroutine(FadeOutMusicCoroutine(audioSource, fadeOutDuration, audioSource.volume));
         }
 
         public void PlayMusic(string id, bool loop = true, float volume = 1f)
         {
             if (!TryGetSoundClipData(id, out AudioData sound)) return;
 
+            AudioSource musicSource = GetSource(defaultMusicChannel);
+            
+            musicSource.loop = loop;
+            musicSource.clip = sound.clip;
+            musicSource.volume = volume * sound.volumeMultiplier;
+            musicSource.Play();
+        }
+
+        public void PlayMusic(int channel, string id, bool loop = true, float volume = 1f)
+        {
+            if (!TryGetSoundClipData(id, out AudioData sound)) return;
+
+            AudioSource musicSource = GetSource(channel);
+            
             musicSource.loop = loop;
             musicSource.clip = sound.clip;
             musicSource.volume = volume * sound.volumeMultiplier;
@@ -65,11 +91,34 @@ namespace AdriKat.Toolkit.Audio
         {
             if (!TryGetSoundClipData(id, out var sound)) return;
 
+            AudioSource sfxSource = GetSource(defaultSFXChannel);
+            
+            sfxSource.PlayOneShot(sound.clip, volume * sound.volumeMultiplier);
+        }
+
+        public void PlaySFX(int channel, string id, float volume = 1f)
+        {
+            if (!TryGetSoundClipData(id, out var sound)) return;
+
+            AudioSource sfxSource = GetSource(channel);
+            
             sfxSource.PlayOneShot(sound.clip, volume * sound.volumeMultiplier);
         }
 
         #endregion
 
+        #region Helper Methods
+
+        protected AudioSource GetSource(int channel)
+        {
+            return sources[channel];
+        }
+        
+        protected AudioSource GetSourceOrDefault(int channel, AudioSource defaultSource)
+        {
+            return channel >= 0 && channel < sources.Length ? sources[channel] : defaultSource;
+        }
+        
         protected bool TryGetSoundClipData(string id, out AudioData sound)
         {
             if (id.IsNullOrEmpty())
@@ -88,6 +137,8 @@ namespace AdriKat.Toolkit.Audio
             return true;
         }
 
+        #endregion
+        
         #region Coroutine Animations
 
         protected static IEnumerator FadeOutMusicCoroutine(AudioSource source, float fadeOutDuration, float originalVolume, bool stopOnComplete = true)
@@ -121,8 +172,14 @@ namespace AdriKat.Toolkit.Audio
             GameObject sfxSource = new GameObject("SFX Source");
             var sfx = sfxSource.AddComponent<AudioSource>();
             
-            audioManager.musicSource = music;
-            audioManager.sfxSource = sfx;
+            music.loop = true;
+            music.playOnAwake = false;
+            sfx.loop = false;
+            sfx.playOnAwake = false;
+            
+            audioManager.defaultMusicChannel = 0;
+            audioManager.defaultSFXChannel = 1;
+            audioManager.sources = new[] {music, sfx};
             
             UnityEditor.GameObjectUtility.SetParentAndAlign(musicSource, go);
             UnityEditor.GameObjectUtility.SetParentAndAlign(sfxSource, go);
@@ -131,8 +188,28 @@ namespace AdriKat.Toolkit.Audio
             UnityEditor.Undo.RegisterCreatedObjectUndo(go, "Created Audio Manager");
             UnityEditor.Selection.activeObject = go;
         }
-        
-        
+
+        private void CreateNewChannel()
+        {
+            // Create a new GameObject
+            GameObject go = new GameObject("New Channel");
+            var newAudioSource = go.AddComponent<AudioSource>();
+            
+            // Extends the current array by appending the new source to it.
+            AudioSource[] newArray = new AudioSource[sources.Length + 1];
+            for (int i = 0; i < newArray.Length; i++)
+            {
+                newArray[i] = i < sources.Length ? sources[i] : newAudioSource;
+            }
+            
+            sources = newArray;
+            
+            UnityEditor.GameObjectUtility.SetParentAndAlign(go, gameObject);
+            
+            // Register undo and select the object
+            UnityEditor.Undo.RegisterCreatedObjectUndo(go, "Created Audio Source");
+            UnityEditor.Selection.activeObject = go;
+        }
         
         #endif
     }
