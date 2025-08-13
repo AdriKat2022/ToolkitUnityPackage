@@ -11,15 +11,15 @@ namespace AdriKat.Toolkit.Audio
         public string defaultAudioDataCreationFolder = "Assets/Audio/AudioData";
         
         [Header("Audio IDs")]
-        [Tooltip("If true, will auto re-generate the AudioIDs class each time Unity recompiles.")]
-        public bool autoGenerateAudioIDs = false;
-        [Tooltip("If true, will trigger Unity's recompilation after generating the AudioIDs class.")]
-        public bool refreshAssetsAfterGeneration = true;
+        [ButtonAction(true, nameof(RegenerateAudioIDsClass))]
         [Tooltip("The path of the generated AudioIDs class by default.\nIf the file already exists, it will be overwritten in place without changing its current path.")]
         public string audioIDClassPath = "Assets/Audio/AudioIDs.cs";
+        [Tooltip("If true, will auto re-generate the AudioIDs class each time Unity recompiles.")]
+        public bool autoRegenerateAudioIDs = false;
+        [Tooltip("If true, will trigger Unity's recompilation after generating the AudioIDs class.")]
+        public bool refreshAssetsAfterGeneration = true;
 
-        [OldButtonAction(nameof(RefreshAudioIDs))]
-        private void RefreshAudioIDs()
+        private void RegenerateAudioIDsClass()
         {
             AudioIDGenerator.GenerateAudioIDClass();
         }

@@ -17,9 +17,8 @@ namespace AdriKat.Toolkit.Audio
 
         [Header("Sources")]
         public AudioSource[] sources;
-
-        [Space]
-        // [OldButtonAction(nameof(CreateNewChannel))]
+        
+        [ButtonAction(false, 10, nameof(CreateNewChannel), nameof(RefreshChildrenSources))]
         public int defaultMusicChannel = 0;
         public int defaultSFXChannel = 1;
         
@@ -156,6 +155,36 @@ namespace AdriKat.Toolkit.Audio
 
         #endregion
         
+        private void CreateNewChannel()
+        {
+            #if UNITY_EDITOR
+            
+            // Create a new GameObject
+            GameObject go = new GameObject("New Channel");
+            var newAudioSource = go.AddComponent<AudioSource>();
+            
+            // Extends the current array by appending the new source to it.
+            AudioSource[] newArray = new AudioSource[sources.Length + 1];
+            for (int i = 0; i < newArray.Length; i++)
+            {
+                newArray[i] = i < sources.Length ? sources[i] : newAudioSource;
+            }
+            
+            sources = newArray;
+            
+            UnityEditor.GameObjectUtility.SetParentAndAlign(go, gameObject);
+            
+            // Register undo and select the object
+            UnityEditor.Undo.RegisterCreatedObjectUndo(go, "Created Audio Source");
+            UnityEditor.Selection.activeObject = go;
+            #endif
+        }
+
+        private void RefreshChildrenSources()
+        {
+            sources = GetComponentsInChildren<AudioSource>();
+        }
+        
         #if UNITY_EDITOR
         
         [UnityEditor.MenuItem("GameObject/Audio/Audio Manager")]
@@ -189,27 +218,6 @@ namespace AdriKat.Toolkit.Audio
             UnityEditor.Selection.activeObject = go;
         }
 
-        private void CreateNewChannel()
-        {
-            // Create a new GameObject
-            GameObject go = new GameObject("New Channel");
-            var newAudioSource = go.AddComponent<AudioSource>();
-            
-            // Extends the current array by appending the new source to it.
-            AudioSource[] newArray = new AudioSource[sources.Length + 1];
-            for (int i = 0; i < newArray.Length; i++)
-            {
-                newArray[i] = i < sources.Length ? sources[i] : newAudioSource;
-            }
-            
-            sources = newArray;
-            
-            UnityEditor.GameObjectUtility.SetParentAndAlign(go, gameObject);
-            
-            // Register undo and select the object
-            UnityEditor.Undo.RegisterCreatedObjectUndo(go, "Created Audio Source");
-            UnityEditor.Selection.activeObject = go;
-        }
         
         #endif
     }

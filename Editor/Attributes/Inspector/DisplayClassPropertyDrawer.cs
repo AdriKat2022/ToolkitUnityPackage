@@ -1,5 +1,4 @@
-﻿using System;
-using AdriKat.Toolkit.Utils;
+﻿using AdriKat.Toolkit.Utils;
 using UnityEditor;
 using UnityEngine;
 

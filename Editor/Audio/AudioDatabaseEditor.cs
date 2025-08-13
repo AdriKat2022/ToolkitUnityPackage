@@ -10,7 +10,9 @@ namespace AdriKat.Toolkit.Audio
         {
             base.OnInspectorGUI();
 
-            if (GUILayout.Button("Refresh AudioID constants"))
+            GUILayout.BeginHorizontal();
+            
+            if (GUILayout.Button("Re-generate AudioIDs Class"))
             {
                 AudioIDGenerator.GenerateAudioIDClass();
             }
@@ -19,6 +21,8 @@ namespace AdriKat.Toolkit.Audio
             {
                 AudioSettingsProvider.OpenSettingsForUser();
             }
+            
+            GUILayout.EndHorizontal();
         }
     }
 }
