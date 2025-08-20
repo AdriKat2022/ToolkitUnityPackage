@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using AdriKat.Toolkit.Utils;
 using UnityEditor;
-using UnityEditor.AnimatedValues;
 using UnityEngine;
 
 namespace AdriKat.Toolkit.Attributes
