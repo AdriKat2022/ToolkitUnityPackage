@@ -5,6 +5,12 @@ namespace AdriKat.Toolkit.UIElements
 {
     public class InstantiateUIElements
     {
+        [MenuItem("GameObject/UI/SlideSelector", false, 10)]
+        private static void InstantiateSlideSelector()
+        {
+            InstantiatePrefabWithGUID("3ce48dc3862df4c4b8efec1b4d302805");
+        }
+        
         [MenuItem("GameObject/UI/SimpleTimer", false, 10)]
         private static void InstantiateSimpleTimer()
         {
@@ -29,14 +35,14 @@ namespace AdriKat.Toolkit.UIElements
 
             if (string.IsNullOrEmpty(prefabPath))
             {
-                Debug.LogError("Prefab not found! Check the GUID.");
+                Debug.LogError($"Prefab with GUID \"{prefabGUID}\" not found!");
                 return null;
             }
 
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
             if (prefab == null)
             {
-                Debug.LogError("Failed to load prefab from GUID.");
+                Debug.LogError($"Failed to load prefab of GUID \"{prefabGUID}\" at path \"{prefabPath}\".");
                 return null;
             }
 

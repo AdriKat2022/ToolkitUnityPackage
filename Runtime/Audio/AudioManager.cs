@@ -39,6 +39,13 @@ namespace AdriKat.Toolkit.Audio
         private void LoadSoundClipDataDatabase()
         {
             audioDictionary = new Dictionary<string, AudioData>();
+            
+            if (database == null)
+            {
+                Debug.LogWarning("No sound database assigned to AudioManager!");
+                return;
+            }
+            
             foreach (var sound in database.allSounds)
             {
                 if (sound != null && !string.IsNullOrEmpty(sound.id))
