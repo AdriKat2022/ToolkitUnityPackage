@@ -1,7 +1,7 @@
 ﻿using System;
-using AdriKat.Toolkit.Utility;
 using UnityEditor;
 using UnityEngine;
+using AdriKat.Toolkit.Utility;
 
 namespace AdriKat.Toolkit.Utils
 {
@@ -37,7 +37,16 @@ namespace AdriKat.Toolkit.Utils
 
             GUI.EndGroup();
         }
-        
+
+        /// <summary>
+        /// Draws a serialized object reference property with an optional button for creating or assigning
+        /// the object and a foldout toggle for additional details.
+        /// </summary>
+        /// <param name="property">The serialized property to draw, typically an object reference.</param>
+        /// <param name="label">The label to display for the object field.</param>
+        /// <param name="actionName">The name of the button used to create or assign the object when the value is null.</param>
+        /// <param name="onActionClicked">A callback function invoked when the action button is clicked, expected to return a new object reference.</param>
+        /// <param name="foldoutState">A boolean value representing the foldout state for additional UI elements. Passed by reference to retain changes.</param>
         public static void DrawObjectWithFoldout(SerializedProperty property, GUIContent label, string actionName, Func<UnityEngine.Object> onActionClicked, ref bool foldoutState)
         {
             if (property == null)
@@ -99,7 +108,16 @@ namespace AdriKat.Toolkit.Utils
 
             EditorGUI.EndProperty();
         }
-        
+
+        /// <summary>
+        /// Draws an object field with a foldout for additional details and an optional action button.
+        /// </summary>
+        /// <param name="position">The area within which to draw the GUI elements.</param>
+        /// <param name="property">The serialized property representing the object reference to be displayed.</param>
+        /// <param name="label">The label for the object field.</param>
+        /// <param name="actionName">The text for the action button (e.g., "Create" or "Add").</param>
+        /// <param name="onActionClicked">A callback invoked when the action button is clicked, expected to return a reference to the created object.</param>
+        /// <param name="foldoutState">A boolean reference indicating the foldout state, which can be toggled via the foldout GUI element.</param>
         public static void DrawObjectWithFoldout(Rect position, SerializedProperty property, GUIContent label, string actionName, Func<UnityEngine.Object> onActionClicked, ref bool foldoutState)
         {
             if (property == null) return;
@@ -179,7 +197,14 @@ namespace AdriKat.Toolkit.Utils
 
             EditorGUI.EndProperty();
         }
-        
+
+        /// <summary>
+        /// Calculates the height required to render the contents of a SerializedProperty
+        /// that references an object, including foldout state and any sub-properties.
+        /// </summary>
+        /// <param name="property">The SerializedProperty representing the object reference.</param>
+        /// <param name="foldoutState">The foldout state indicating whether the object's sub-properties are expanded.</param>
+        /// <returns>The total height necessary to render the object and its content.</returns>
         public static float GetPropertyHeightOfObjectContent(SerializedProperty property, bool foldoutState)
         {
             float height = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
@@ -210,6 +235,18 @@ namespace AdriKat.Toolkit.Utils
             
             return height;
         }
-        
+
+        /// <summary>
+        /// Executes a drawing action within a disabled GUI state if specified.
+        /// </summary>
+        /// <param name="drawAction">The action to execute for drawing the content.</param>
+        /// <param name="isActive">Determines whether the GUI state is active or disabled. If false, the GUI is disabled during the execution.</param>
+        public static void DrawDisabled(Action drawAction, bool isActive = false)
+        {
+            bool previousState = GUI.enabled;
+            GUI.enabled = isActive;
+            drawAction?.Invoke();
+            GUI.enabled = previousState;
+        }
     }
 }
