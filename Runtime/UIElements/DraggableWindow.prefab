@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6626207204129810043}
   - component: {fileID: 2540909811714139869}
   - component: {fileID: 2171483725959576624}
+  - component: {fileID: 8889914765092532491}
   m_Layer: 5
   m_Name: DraggableWindow
   m_TagString: Untagged
@@ -77,6 +78,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 0.25
+--- !u!114 &8889914765092532491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2547441192376101294}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28b83146ad8d4da439ee3f3c4b0a8d8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2568701235361031886
 GameObject:
   m_ObjectHideFlags: 0
@@ -167,6 +180,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   windowToDrag: {fileID: 6626207204129810043}
   smoothDrag: 0.1
+  focusOnClick: {fileID: 8889914765092532491}
+  focusOnBeginDrag: 1
 --- !u!1 &8233905329264815122
 GameObject:
   m_ObjectHideFlags: 0

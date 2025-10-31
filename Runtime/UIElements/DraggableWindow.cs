@@ -1,4 +1,5 @@
 ﻿using System;
+using AdriKat.Toolkit.Attributes;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -9,6 +10,11 @@ namespace AdriKat.Toolkit.UIElements
         public RectTransform windowToDrag;
         [Range(0, 1f)]
         public float smoothDrag = 0.1f;
+        
+        [Header("Focus")]
+        public FocusOnClick focusOnClick;
+        [ShowIf(nameof(focusOnClick))]
+        public bool focusOnBeginDrag;
         
         private Vector2 anchoredPosOnBeginDrag;
         private Vector2 mousePosOnBeginDrag;
@@ -24,6 +30,11 @@ namespace AdriKat.Toolkit.UIElements
 
         public void OnBeginDrag(PointerEventData eventData)
         {
+            if (focusOnBeginDrag && focusOnClick)
+            {
+                focusOnClick.OnPointerClick(null);
+            }
+            
             anchoredPosOnBeginDrag = windowToDrag.anchoredPosition;
             mousePosOnBeginDrag = eventData.position;
             isDragging = true;

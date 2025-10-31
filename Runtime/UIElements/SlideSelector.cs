@@ -12,8 +12,8 @@ namespace AdriKat.Toolkit.UIElements
 {
     public class SlideSelector : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
-        [SerializeField] private bool interactableOnStart = true;
-        [SerializeField] private bool interactable = true;
+        public bool interactableOnStart = true;
+        public bool interactable = true;
         public WarpSelectionMode warpSelectionMode = WarpSelectionMode.Clamp;
         [ButtonAction(nameof(SetChildrenAsOptions), heightSpacing = 20, showButtonBelow = true)]
         public bool makeOptionsClickable;
@@ -33,15 +33,15 @@ namespace AdriKat.Toolkit.UIElements
         public Vector2 offset;
         
         [Header("Input")]
-        [SerializeField] private bool allowDragging = true;
-        [SerializeField] private bool autoSetEventToButtons;
-        [SerializeField] private Button previousButton; 
-        [SerializeField] private Button nextButton; 
-        // [SerializeField] private bool showConfirmButton = true;
-        [SerializeField] private Button confirmButton;
-        [SerializeField] private bool disableOnSubmit = true;
-        // [SerializeField] private InputActionReference leftAction;
-        // [SerializeField] private InputActionReference rightAction;
+        public bool allowDragging = true;
+        public bool autoSetEventToButtons;
+        public Button previousButton; 
+        public Button nextButton; 
+        // public bool showConfirmButton = true;
+        public Button confirmButton;
+        public bool disableOnSubmit = true;
+        // public InputActionReference leftAction;
+        // public InputActionReference rightAction;
 
         private Vector2 onDragBeginPosition;
         private Vector2 onDragBeginOffset;
