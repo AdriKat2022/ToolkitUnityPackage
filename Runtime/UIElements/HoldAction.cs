@@ -16,51 +16,51 @@ namespace AdriKat.Toolkit.UIElements
     {
         #region Variables
         [Header("Input")]
-        [Tooltip("If true, the input system will not be used. Instead, use the ToogleHold function. Or the ForceHold function.")]
-        [SerializeField] private bool _doNotUseInputSystem = false;
-        [SerializeField] private InputActionReference _holdAction;
+        [Tooltip("If true, the input system will not be used. Instead, you must use the ToogleHold function. Or the ForceHold function.")]
+        public bool doNotUseInputSystem = false;
+        public InputActionReference holdAction;
 
         [Header("Hold Action Settings")]
-        [SerializeField] private float _holdDuration = 1f;
+        public float holdDuration = 1f;
         [Tooltip("The 'gravity' of the hold amount when input is released.\n" +
             "The higher, the quicker the meter resets after letting go of the input.\n" +
             "0 means no gravity, meaning the meter will never resets on its own.")]
-        [SerializeField] private float _releaseMultiplier = 3f;
-        [SerializeField] private float _cooldownAfterSuccessAction = 1f;
+        public float releaseMultiplier = 3f;
+        public float cooldownAfterSuccessAction = 1f;
 
         [Header("Text and References")]
-        [SerializeField] private TextMeshProUGUI _text;
+        public TextMeshProUGUI text;
         [Tooltip("Text to show when in holding state, when the input is held.")]
-        [SerializeField] private string _holdingText = "Holding...";
+        public string holdingText = "Holding...";
         [Tooltip("Text to show when in success state, when the action is completed.")]
-        [SerializeField] private string _successText = "Held!";
+        public string successText = "Held!";
         [Tooltip("Text to show when in cancelling state, when the input is let go.")]
-        [SerializeField] private string _cancellingText = "Cancelling...";
+        public string cancellingText = "Cancelling...";
         [Tooltip("The filling image that will indicate the hold percentage.\nThis image must be in FILLED mode.")]
-        [SerializeField] private Image _indicator;
+        public Image indicator;
         [Tooltip("The image that will be plained displayed when the hold is successful.\n" +
             "An image is here referenced, but other components/child game objects can be attached to it," +
             "since that is its game object will be toggled active.")]
-        [SerializeField] private Image _successIndicator;
+        public Image successIndicator;
 
         [Header("Animation Settings")]
-        [SerializeField] private Color _normalColor = Color.white;
-        [SerializeField] private Color _successColor = Color.green;
+        public Color normalColor = Color.white;
+        public Color successColor = Color.green;
         [Tooltip("How long the success indicator, and text (in success color) will remain visible before disappearing.\n" +
             "0 will skip the success animation completely.")]
-        [SerializeField] private float _successAnimationDuration = 1f;
+        public float successAnimationDuration = 1f;
         [Range(0f, 1f)]
-        [SerializeField] private float _successAnimationFadeMult = 0.1f;
+        public float successAnimationFadeMult = 0.1f;
         [Tooltip("Customize how the alpha behaves over the lifetime of the hold.")]
-        [SerializeField] private AnimationCurve _alpha = AnimationCurve.Linear(0, 0, 1, 1);
+        public AnimationCurve alpha = AnimationCurve.Linear(0, 0, 1, 1);
         [Tooltip("Customize how the filling indicator behaves over the lifetime of the hold.")]
-        [SerializeField] private AnimationCurve _visualIndicator = AnimationCurve.Linear(0, 0, 1, 1);
+        public AnimationCurve visualIndicator = AnimationCurve.Linear(0, 0, 1, 1);
 
         [Header("Hold Action Events")]
-        [SerializeField] private UnityEvent OnHoldCompleted;
+        public UnityEvent onHoldCompleted;
 
         [Header("Debug Log")]
-        [SerializeField] private bool _debug = false;
+        public bool debug = false;
 
         private bool _wasHeldAtLeastOnce = false;
         private bool _onCooldown = false;
@@ -100,7 +100,7 @@ namespace AdriKat.Toolkit.UIElements
 
             if (_wasHeldAtLeastOnce)
             {
-                _text.text = holding ? _holdingText : _cancellingText;
+                text.text = holding ? holdingText : cancellingText;
             }
 
             if (_isHolding && _successAnimation != null)
@@ -116,44 +116,44 @@ namespace AdriKat.Toolkit.UIElements
 
         private void OnEnable()
         {
-            if (_doNotUseInputSystem) return;
+            if (doNotUseInputSystem) return;
 
-            if (_holdAction == null)
+            if (holdAction == null)
             {
                 Debug.LogWarning("Hold action not set.", gameObject);
-                _doNotUseInputSystem = true;
+                doNotUseInputSystem = true;
                 return;
             }
 
-            _holdAction.action.Enable();
-            _holdAction.action.performed += ToogleHoldCtx;
-            _holdAction.action.canceled += ToogleHoldCtx;
+            holdAction.action.Enable();
+            holdAction.action.performed += ToogleHoldCtx;
+            holdAction.action.canceled += ToogleHoldCtx;
         }
 
         private void OnDisable()
         {
-            if (_doNotUseInputSystem) return;
+            if (doNotUseInputSystem) return;
 
-            if (_holdAction == null)
+            if (holdAction == null)
             {
                 Debug.LogWarning("Hold action not set.", gameObject);
-                _doNotUseInputSystem = true;
+                doNotUseInputSystem = true;
                 return;
             }
 
-            _holdAction.action.Disable();
-            _holdAction.action.performed -= ToogleHoldCtx;
-            _holdAction.action.canceled -= ToogleHoldCtx;
+            holdAction.action.Disable();
+            holdAction.action.performed -= ToogleHoldCtx;
+            holdAction.action.canceled -= ToogleHoldCtx;
         }
 
         private void Start()
         {
-            _indicator.color = new Color(_normalColor.r, _normalColor.g, _normalColor.b, 0);
-            _successIndicator.color = new Color(_successColor.r, _successColor.g, _successColor.b, 0);
-            _text.color = new Color(_normalColor.r, _normalColor.g, _normalColor.b, 0);
-            _successIndicator.gameObject.SetActive(false);
+            indicator.color = new Color(normalColor.r, normalColor.g, normalColor.b, 0);
+            successIndicator.color = new Color(successColor.r, successColor.g, successColor.b, 0);
+            text.color = new Color(normalColor.r, normalColor.g, normalColor.b, 0);
+            successIndicator.gameObject.SetActive(false);
 
-            if (_debug)
+            if (debug)
             {
                 Debug.Log("Hold action initated.", gameObject);
             }
@@ -183,15 +183,15 @@ namespace AdriKat.Toolkit.UIElements
         private void HoldTimeCompleted()
         {
             _onCooldown = true;
-            OnHoldCompleted.Invoke();
+            onHoldCompleted.Invoke();
             ToogleHold(false);
             _successAnimation = StartCoroutine(SuccessAnimation());
-            _cooldownTimer = _cooldownAfterSuccessAction;
+            _cooldownTimer = cooldownAfterSuccessAction;
             _forceHolding = false;
-            _text.text = _successText;
+            text.text = successText;
             _wasHeldAtLeastOnce = false;
 
-            if (_debug)
+            if (debug)
             {
                 Debug.Log("Hold completed. Fired event.", gameObject);
             }
@@ -199,22 +199,22 @@ namespace AdriKat.Toolkit.UIElements
 
         private void ManageHoldVisual()
         {
-            _indicator.fillAmount = _visualIndicator.Evaluate(_currentHoldTime);
-            Color color = _normalColor;
-            color.a = _alpha.Evaluate(_currentHoldTime);
-            _indicator.color = color;
-            _text.color = color;
+            indicator.fillAmount = visualIndicator.Evaluate(_currentHoldTime);
+            Color color = normalColor;
+            color.a = alpha.Evaluate(_currentHoldTime);
+            indicator.color = color;
+            text.color = color;
         }
 
         private void ManageHoldTime()
         {
             if (_isHolding)
             {
-                _currentHoldTime += Time.deltaTime / _holdDuration;
+                _currentHoldTime += Time.deltaTime / holdDuration;
             }
             else
             {
-                _currentHoldTime -= Time.deltaTime * _releaseMultiplier / _holdDuration;
+                _currentHoldTime -= Time.deltaTime * releaseMultiplier / holdDuration;
             }
 
             _currentHoldTime = Mathf.Clamp01(_currentHoldTime);
@@ -237,7 +237,7 @@ namespace AdriKat.Toolkit.UIElements
             StopCoroutine(_successAnimation);
             ResetVisualState();
 
-            if (_debug)
+            if (debug)
             {
                 Debug.Log("Cancelled SuccessAnimation", gameObject);
             }
@@ -245,44 +245,44 @@ namespace AdriKat.Toolkit.UIElements
 
         private void ResetVisualState()
         {
-            _successIndicator.gameObject.SetActive(false);
-            _indicator.gameObject.SetActive(true);
-            Color normalHidden = _normalColor;
+            successIndicator.gameObject.SetActive(false);
+            indicator.gameObject.SetActive(true);
+            Color normalHidden = normalColor;
             normalHidden.a = 0;
-            _indicator.color = normalHidden;
-            _text.color = normalHidden;
+            indicator.color = normalHidden;
+            text.color = normalHidden;
         }
 
         private IEnumerator SuccessAnimation()
         {
             float timer = 0f;
-            _successIndicator.gameObject.SetActive(true);
-            _indicator.gameObject.SetActive(false);
+            successIndicator.gameObject.SetActive(true);
+            indicator.gameObject.SetActive(false);
 
-            Color color = _successIndicator.color;
+            Color color = successIndicator.color;
             color.a = 1;
-            _successIndicator.color = color;
-            _text.color = color;
+            successIndicator.color = color;
+            text.color = color;
 
-            if (_debug)
+            if (debug)
             {
                 Debug.Log("Started SuccessAnimation", gameObject);
             }
 
-            while (timer < _successAnimationDuration)
+            while (timer < successAnimationDuration)
             {
-                if (timer > _successAnimationDuration * (1 - _successAnimationFadeMult))
+                if (timer > successAnimationDuration * (1 - successAnimationFadeMult))
                 {
-                    color.a = Mathematics.Mathematics.MapTo1_0(timer, _successAnimationDuration * (1 - _successAnimationFadeMult), _successAnimationDuration);
-                    _successIndicator.color = color;
-                    _text.color = color;
+                    color.a = Mathematics.Mathematics.MapTo1_0(timer, successAnimationDuration * (1 - successAnimationFadeMult), successAnimationDuration);
+                    successIndicator.color = color;
+                    text.color = color;
                 }
                 timer += Time.deltaTime;
                 yield return null;
             }
             ResetVisualState();
 
-            if (_debug)
+            if (debug)
             {
                 Debug.Log("Ended SuccessAnimation", gameObject);
             }
