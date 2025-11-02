@@ -22,7 +22,7 @@ namespace AdriKat.Toolkit.Audio
         public int defaultMusicChannel = 0;
         public int defaultSFXChannel = 1;
         
-        private Dictionary<string, AudioData> audioDictionary;
+        private Dictionary<string, AudioData> _audioDictionary;
         
         #region Initialization
 
@@ -38,7 +38,7 @@ namespace AdriKat.Toolkit.Audio
 
         private void LoadSoundClipDataDatabase()
         {
-            audioDictionary = new Dictionary<string, AudioData>();
+            _audioDictionary = new Dictionary<string, AudioData>();
             
             if (database == null)
             {
@@ -49,7 +49,7 @@ namespace AdriKat.Toolkit.Audio
             foreach (var sound in database.allSounds)
             {
                 if (sound != null && !string.IsNullOrEmpty(sound.id))
-                    audioDictionary[sound.id] = sound;
+                    _audioDictionary[sound.id] = sound;
             }
         }
 
@@ -57,18 +57,33 @@ namespace AdriKat.Toolkit.Audio
 
         #region Control Methods (Play/Stop)
 
+        /// <summary>
+        /// Stops the track currently playing in the defaultMusicChannel.
+        /// </summary>
+        /// <param name="fadeOutDuration">Duration of the fadeout before completely stopping the track.</param>
         public void StopMusic(float fadeOutDuration = 0.3f)
         {
             AudioSource audioSource = GetSource(defaultMusicChannel);
             StartCoroutine(FadeOutMusicCoroutine(audioSource, fadeOutDuration, audioSource.volume));
         }
 
+        /// <summary>
+        /// Stops the track playing in the provided channel.
+        /// </summary>
+        /// <param name="channel">ID of the channel to stop.</param>
+        /// <param name="fadeOutDuration">Duration of the fadeout before completely stopping the track.</param>
         public void StopMusic(int channel, float fadeOutDuration = 0.3f)
         {
             AudioSource audioSource = GetSource(channel);
             StartCoroutine(FadeOutMusicCoroutine(audioSource, fadeOutDuration, audioSource.volume));
         }
 
+        /// <summary>
+        /// Plays the provided track in the defaultMusicChannel. 
+        /// </summary>
+        /// <param name="id">ID of the track to play (Generally stored in the AudioIDs class).</param>
+        /// <param name="loop">Set the channel to repeat playing tracks.</param>
+        /// <param name="volume">Override volume for the track.</param>
         public void PlayMusic(string id, bool loop = true, float volume = 1f)
         {
             if (!TryGetSoundClipData(id, out AudioData sound)) return;
@@ -81,6 +96,13 @@ namespace AdriKat.Toolkit.Audio
             musicSource.Play();
         }
 
+        /// <summary>
+        /// Plays the provided track in the provided channel.
+        /// </summary>
+        /// <param name="channel">ID of the channel to use to play the track.</param>
+        /// <param name="id">ID of the track to play (Generally stored in the AudioIDs class).</param>
+        /// <param name="loop">Set the channel to repeat playing tracks.</param>
+        /// <param name="volume">Override volume for the track.</param>
         public void PlayMusic(int channel, string id, bool loop = true, float volume = 1f)
         {
             if (!TryGetSoundClipData(id, out AudioData sound)) return;
@@ -93,6 +115,11 @@ namespace AdriKat.Toolkit.Audio
             musicSource.Play();
         }
 
+        /// <summary>
+        /// Plays the provided track in the defaultSFXChannel.
+        /// </summary>
+        /// <param name="id">ID of the track to play (Generally stored in the AudioIDs class).</param>
+        /// <param name="volume">Override volume for the track.</param>
         public void PlaySFX(string id, float volume = 1f)
         {
             if (!TryGetSoundClipData(id, out var sound)) return;
@@ -102,6 +129,12 @@ namespace AdriKat.Toolkit.Audio
             sfxSource.PlayOneShot(sound.clip, volume * sound.volumeMultiplier);
         }
 
+        /// <summary>
+        /// Plays the provided track in the provided channel.
+        /// </summary>
+        /// <param name="channel">ID of the channel to use to play the track.</param>
+        /// <param name="id">ID of the track to play (Generally stored in the AudioIDs class).</param>
+        /// <param name="volume">Override volume for the track.</param>
         public void PlaySFX(int channel, string id, float volume = 1f)
         {
             if (!TryGetSoundClipData(id, out var sound)) return;
@@ -134,7 +167,7 @@ namespace AdriKat.Toolkit.Audio
                 return false;
             }
 
-            if (!audioDictionary.TryGetValue(id!, out sound))
+            if (!_audioDictionary.TryGetValue(id!, out sound))
             {
                 Debug.LogWarning($"Sound with ID '{id}' not found! Use \"Tools/Audio/Generate Sound ID Constants\" and use those to ensure type-safety.");
                 return false;
@@ -224,7 +257,6 @@ namespace AdriKat.Toolkit.Audio
             UnityEditor.Undo.RegisterCreatedObjectUndo(go, "Created Audio Manager");
             UnityEditor.Selection.activeObject = go;
         }
-
         
         #endif
     }
