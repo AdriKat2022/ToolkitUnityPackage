@@ -23,11 +23,10 @@ namespace AdriKat.Toolkit.UIElements
 
         public RectConstraints sizeConstraints;
         
-        private Vector2 rectSizeOnBeginDrag;
-        private Vector2 mousePosOnBeginDrag;
-        private Vector2 targetSize; // Mouse last pos
-        
-        private bool isDragging;
+        private Vector2 _rectSizeOnBeginDrag;
+        private Vector2 _mousePosOnBeginDrag;
+        private Vector2 _targetSize; // Mouse last pos
+        private bool _isDragging;
 
         private void Start()
         {
@@ -39,9 +38,9 @@ namespace AdriKat.Toolkit.UIElements
 
         private void Update()
         {
-            if (!isDragging) return;
+            if (!_isDragging) return;
 
-            var sizeDelta = Vector2.Lerp(rectTransformToResize.sizeDelta, targetSize, Time.deltaTime / (smoothDrag + 0.001f));
+            var sizeDelta = Vector2.Lerp(rectTransformToResize.sizeDelta, _targetSize, Time.deltaTime / (smoothDrag + 0.001f));
             sizeConstraints.UpdateConstraints();
             sizeDelta = sizeConstraints.GetConstrainedSize(sizeDelta);
             
@@ -55,28 +54,28 @@ namespace AdriKat.Toolkit.UIElements
                 rectTransformToResize.SetPivot(grabbedAnchor.GetOppositeAnchor(), true);
             }
             
-            rectSizeOnBeginDrag = rectTransformToResize.rect.size;
-            mousePosOnBeginDrag = eventData.position;
+            _rectSizeOnBeginDrag = rectTransformToResize.rect.size;
+            _mousePosOnBeginDrag = eventData.position;
             
-            isDragging = true;
+            _isDragging = true;
         }
 
         public void OnDrag(PointerEventData eventData)
         {
             if (resizeBothAxis)
             {
-                targetSize = rectSizeOnBeginDrag - (mousePosOnBeginDrag - eventData.position);
+                _targetSize = _rectSizeOnBeginDrag - (_mousePosOnBeginDrag - eventData.position);
             }
             else
             {
                 var axis = (int)resizeAxis;
-                targetSize[axis] = rectSizeOnBeginDrag[axis] - (mousePosOnBeginDrag[axis] - eventData.position[axis]);
+                _targetSize[axis] = _rectSizeOnBeginDrag[axis] - (_mousePosOnBeginDrag[axis] - eventData.position[axis]);
             }
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            isDragging = false;
+            _isDragging = false;
         }
         
         #if UNITY_EDITOR
