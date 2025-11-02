@@ -17,10 +17,11 @@ namespace AdriKat.Toolkit.UIElements
         public float smoothDrag = 0.1f;
         
         public bool controlPivot;
+        public bool controlKnobPosition;
         [ShowIf(nameof(controlPivot))]
         public TextAnchor grabbedAnchor;
 
-        public RectConstraints constraints;
+        public RectConstraints sizeConstraints;
         
         private Vector2 rectSizeOnBeginDrag;
         private Vector2 mousePosOnBeginDrag;
@@ -28,21 +29,21 @@ namespace AdriKat.Toolkit.UIElements
         
         private bool isDragging;
 
-        // private void Start()
-        // {
-        //     if (controlPivot)
-        //     {
-        //         rectTransformToResize.SetPivot(grabbedAnchor.GetOppositeAnchor());
-        //     }
-        // }
+        private void Start()
+        {
+            if (controlKnobPosition)
+            {
+                rectTransformToResize.SetPivot(grabbedAnchor.GetOppositeAnchor());
+            }
+        }
 
         private void Update()
         {
             if (!isDragging) return;
 
             var sizeDelta = Vector2.Lerp(rectTransformToResize.sizeDelta, targetSize, Time.deltaTime / (smoothDrag + 0.001f));
-            constraints.UpdateConstraints();
-            sizeDelta = constraints.GetConstrainedSize(sizeDelta);
+            sizeConstraints.UpdateConstraints();
+            sizeDelta = sizeConstraints.GetConstrainedSize(sizeDelta);
             
             rectTransformToResize.sizeDelta = sizeDelta;
         }
@@ -82,10 +83,19 @@ namespace AdriKat.Toolkit.UIElements
 
         private void OnValidate()
         {
-            constraints.UpdateConstraints();
-            rectTransformToResize.sizeDelta = constraints.GetConstrainedSize(rectTransformToResize.sizeDelta);
+            sizeConstraints.UpdateConstraints();
+            rectTransformToResize.sizeDelta = sizeConstraints.GetConstrainedSize(rectTransformToResize.sizeDelta);
+
+            // Place the knob accordingly to the grabbedAnchor 
+            var rectTransform = transform as RectTransform;
+            if (controlKnobPosition && transform.parent != null && rectTransform != null)
+            {
+                rectTransform.SetPivot(TextAnchor.MiddleCenter);
+                rectTransform.SetAnchor(grabbedAnchor);
+                rectTransform.anchoredPosition = Vector2.zero;
+            }
         }
 
-#endif
+        #endif
     }
 }

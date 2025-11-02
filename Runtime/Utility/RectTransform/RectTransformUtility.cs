@@ -6,14 +6,15 @@ namespace Toolkit.Runtime.Utility
     public static class RectTransformUtility
     {
         /// <summary>
-        /// Sets the pivot point of a RectTransform based on a TextAnchor value.
+        /// Translate the textAnchor to a vector2 variable in a (x,y) form with:<br/>
+        /// x for horizontal 0-1 > left-right;<br/>
+        /// y for vertical 0-1 > down-up;<br/>
+        /// For example: UpperLeft => (0, 1) and LowerMiddle => (0.5, 0)
         /// </summary>
-        /// <param name="rectTransform">The RectTransform to modify.</param>
-        /// <param name="pivot">The TextAnchor value determining the pivot position.</param>
-        /// <param name="keepPosition">Corrects the position so the pivot change doesn't affect the visible position.</param>
-        public static void SetPivot(this RectTransform rectTransform, TextAnchor pivot, bool keepPosition = false)
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public static Vector2 AsVector2(this TextAnchor textAnchor)
         {
-            Vector2 newPivot = pivot switch
+            return textAnchor switch
             {
                 TextAnchor.UpperLeft => new Vector2(0, 1),
                 TextAnchor.UpperCenter => new Vector2(0.5f, 1),
@@ -24,8 +25,19 @@ namespace Toolkit.Runtime.Utility
                 TextAnchor.LowerLeft => new Vector2(0, 0),
                 TextAnchor.LowerCenter => new Vector2(0.5f, 0),
                 TextAnchor.LowerRight => new Vector2(1, 0),
-                _ => throw new ArgumentOutOfRangeException(nameof(pivot), pivot, null)
+                _ => throw new ArgumentOutOfRangeException(nameof(textAnchor), textAnchor, null)
             };
+        }
+        
+        /// <summary>
+        /// Sets the pivot point of a RectTransform based on a TextAnchor value.
+        /// </summary>
+        /// <param name="rectTransform">The RectTransform to modify.</param>
+        /// <param name="pivot">The TextAnchor value determining the pivot position.</param>
+        /// <param name="keepPosition">Corrects the position so the pivot change doesn't affect the visible position.</param>
+        public static void SetPivot(this RectTransform rectTransform, TextAnchor pivot, bool keepPosition = false)
+        {
+            Vector2 newPivot = pivot.AsVector2();
 
             if (keepPosition)
             {
@@ -36,6 +48,18 @@ namespace Toolkit.Runtime.Utility
             rectTransform.pivot = newPivot;
         }
 
+        /// <summary>
+        /// Quickly set the anchor of the rectTransform.
+        /// This will set both anchorMax and anchorMin.
+        /// </summary>
+        public static void SetAnchor(this RectTransform rectTransform, TextAnchor anchor)
+        {
+            Vector2 newPivot = anchor.AsVector2();
+
+            rectTransform.anchorMax = newPivot;
+            rectTransform.anchorMin = newPivot;
+        }
+        
         /// <summary>
         /// Retrieves the opposite TextAnchor value relative to the given anchor.
         /// </summary>
