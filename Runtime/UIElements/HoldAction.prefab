@@ -188,22 +188,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0e476df55164bc449662e39745bee2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _doNotUseInputSystem: 0
-  _holdAction: {fileID: 0}
-  _holdDuration: 1
-  _releaseMultiplier: 1
-  _cooldownAfterSuccessAction: 1
-  _text: {fileID: 6803593214256869453}
-  _holdingText: Holding...
-  _successText: Held!
-  _cancellingText: Cancelling...
-  _indicator: {fileID: 8122846161121362083}
-  _successIndicator: {fileID: 9140340937305689137}
-  _normalColor: {r: 1, g: 1, b: 1, a: 1}
-  _successColor: {r: 0, g: 1, b: 0, a: 1}
-  _successAnimationDuration: 2
-  _successAnimationFadeMult: 0.3
-  _alpha:
+  doNotUseInputSystem: 0
+  holdAction: {fileID: 0}
+  holdDuration: 1
+  releaseMultiplier: 3
+  cooldownAfterSuccessAction: 1
+  text: {fileID: 6803593214256869453}
+  holdingText: Holding...
+  successText: Held!
+  cancellingText: Cancelling...
+  useIndicator: 1
+  indicator: {fileID: 8122846161121362083}
+  successIndicator: {fileID: 9140340937305689137}
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  successColor: {r: 0, g: 1, b: 0, a: 1}
+  successAnimationDuration: 1
+  successAnimationFadeMult: 0.1
+  alpha:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -227,7 +228,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  _visualIndicator:
+  visualIndicator:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -251,10 +252,10 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  OnHoldCompleted:
+  onHoldCompleted:
     m_PersistentCalls:
       m_Calls: []
-  _debug: 0
+  debug: 0
 --- !u!114 &505203845034452550
 MonoBehaviour:
   m_ObjectHideFlags: 0

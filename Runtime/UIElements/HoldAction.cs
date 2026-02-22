@@ -1,4 +1,5 @@
 using System.Collections;
+using AdriKat.Toolkit.Attributes;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -16,7 +17,8 @@ namespace AdriKat.Toolkit.UIElements
     {
         #region Variables
         [Header("Input")]
-        [Tooltip("If true, the input system will not be used. Instead, you must use the ToogleHold function. Or the ForceHold function.")]
+        [Tooltip("If true, the input system will not be used. Instead, you must use the ToggleHold or ForceHold function.\n" +
+                 "May have unintended behaviour if this field is changed while the object is ACTIVE.")]
         public bool doNotUseInputSystem = false;
         public InputActionReference holdAction;
 
@@ -31,16 +33,21 @@ namespace AdriKat.Toolkit.UIElements
         [Header("Text and References")]
         public TextMeshProUGUI text;
         [Tooltip("Text to show when in holding state, when the input is held.")]
+        public string neutralText = "Press [] to act.";
+        [Tooltip("Text to show when in holding state, when the input is held.")]
         public string holdingText = "Holding...";
         [Tooltip("Text to show when in success state, when the action is completed.")]
         public string successText = "Held!";
         [Tooltip("Text to show when in cancelling state, when the input is let go.")]
         public string cancellingText = "Cancelling...";
+        public bool useIndicator = true;
         [Tooltip("The filling image that will indicate the hold percentage.\nThis image must be in FILLED mode.")]
+        [ShowIf(nameof(useIndicator))]
         public Image indicator;
         [Tooltip("The image that will be plained displayed when the hold is successful.\n" +
             "An image is here referenced, but other components/child game objects can be attached to it," +
             "since that is its game object will be toggled active.")]
+        [ShowIf(nameof(useIndicator))]
         public Image successIndicator;
 
         [Header("Animation Settings")]
@@ -55,6 +62,8 @@ namespace AdriKat.Toolkit.UIElements
         public AnimationCurve alpha = AnimationCurve.Linear(0, 0, 1, 1);
         [Tooltip("Customize how the filling indicator behaves over the lifetime of the hold.")]
         public AnimationCurve visualIndicator = AnimationCurve.Linear(0, 0, 1, 1);
+        [Tooltip("If the action should be shown even when deactivated.")]
+        public bool hideByDefault = true;
 
         [Header("Hold Action Events")]
         public UnityEvent onHoldCompleted;
@@ -77,7 +86,7 @@ namespace AdriKat.Toolkit.UIElements
         /// </summary>
         public void ForceHold()
         {
-            ToogleHold(true);
+            ToggleHold(true);
             _forceHolding = true;
         }
 
@@ -88,7 +97,7 @@ namespace AdriKat.Toolkit.UIElements
         /// Ignored if the hold action is on force holding. But input is registered during cooldown.<br/>
         /// </summary>
         /// <param name="holding"></param>
-        public void ToogleHold(bool holding)
+        public void ToggleHold(bool holding)
         {
             if (_forceHolding) return;
 
@@ -96,22 +105,23 @@ namespace AdriKat.Toolkit.UIElements
 
             if (_onCooldown) return;
 
+            
             _wasHeldAtLeastOnce |= holding;
-
-            if (_wasHeldAtLeastOnce)
-            {
-                text.text = holding ? holdingText : cancellingText;
-            }
 
             if (_isHolding && _successAnimation != null)
             {
                 CancelSuccessAnimation();
             }
+
+            if (_wasHeldAtLeastOnce)
+            {
+                text.text = holding ? holdingText : cancellingText;
+            }
         }
 
-        private void ToogleHoldCtx(InputAction.CallbackContext ctx)
+        private void ToggleHoldCtx(InputAction.CallbackContext ctx)
         {
-            ToogleHold(ctx.performed);
+            ToggleHold(ctx.performed);
         }
 
         private void OnEnable()
@@ -126,8 +136,8 @@ namespace AdriKat.Toolkit.UIElements
             }
 
             holdAction.action.Enable();
-            holdAction.action.performed += ToogleHoldCtx;
-            holdAction.action.canceled += ToogleHoldCtx;
+            holdAction.action.performed += ToggleHoldCtx;
+            holdAction.action.canceled += ToggleHoldCtx;
         }
 
         private void OnDisable()
@@ -142,16 +152,21 @@ namespace AdriKat.Toolkit.UIElements
             }
 
             holdAction.action.Disable();
-            holdAction.action.performed -= ToogleHoldCtx;
-            holdAction.action.canceled -= ToogleHoldCtx;
+            holdAction.action.performed -= ToggleHoldCtx;
+            holdAction.action.canceled -= ToggleHoldCtx;
         }
 
         private void Start()
         {
-            indicator.color = new Color(normalColor.r, normalColor.g, normalColor.b, 0);
-            successIndicator.color = new Color(successColor.r, successColor.g, successColor.b, 0);
-            text.color = new Color(normalColor.r, normalColor.g, normalColor.b, 0);
-            successIndicator.gameObject.SetActive(false);
+            if (useIndicator)
+            {
+                indicator.color = new Color(normalColor.r, normalColor.g, normalColor.b, hideByDefault ? 0 : alpha.Evaluate(0));
+                successIndicator.color = new Color(successColor.r, successColor.g, successColor.b, 0);
+                successIndicator.gameObject.SetActive(false);
+            }
+
+            text.text = neutralText;
+            text.color = new Color(normalColor.r, normalColor.g, normalColor.b, hideByDefault ? 0 : alpha.Evaluate(0));
 
             if (debug)
             {
@@ -172,6 +187,11 @@ namespace AdriKat.Toolkit.UIElements
             if (_wasHeldAtLeastOnce)
             {
                 ManageHoldVisual();
+
+                if (_currentHoldTime <= 0)
+                {
+                    text.text = neutralText;
+                }
             }
 
             if (_currentHoldTime >= 1)
@@ -184,7 +204,7 @@ namespace AdriKat.Toolkit.UIElements
         {
             _onCooldown = true;
             onHoldCompleted.Invoke();
-            ToogleHold(false);
+            ToggleHold(false);
             _successAnimation = StartCoroutine(SuccessAnimation());
             _cooldownTimer = cooldownAfterSuccessAction;
             _forceHolding = false;
@@ -205,7 +225,7 @@ namespace AdriKat.Toolkit.UIElements
             indicator.color = color;
             text.color = color;
         }
-
+        
         private void ManageHoldTime()
         {
             if (_isHolding)
@@ -229,7 +249,6 @@ namespace AdriKat.Toolkit.UIElements
                 _currentHoldTime = 0;
                 _onCooldown = false;
             }
-            return;
         }
 
         private void CancelSuccessAnimation()
@@ -247,10 +266,11 @@ namespace AdriKat.Toolkit.UIElements
         {
             successIndicator.gameObject.SetActive(false);
             indicator.gameObject.SetActive(true);
-            Color normalHidden = normalColor;
-            normalHidden.a = 0;
-            indicator.color = normalHidden;
-            text.color = normalHidden;
+            Color resetColor = normalColor;
+            resetColor.a = hideByDefault ? 0 : alpha.Evaluate(0);
+            indicator.color = resetColor;
+            text.color = resetColor;
+            text.text = neutralText;
         }
 
         private IEnumerator SuccessAnimation()
