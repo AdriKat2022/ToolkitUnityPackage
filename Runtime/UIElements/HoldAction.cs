@@ -20,6 +20,8 @@ namespace AdriKat.Toolkit.UIElements
         [Tooltip("If true, the input system will not be used. Instead, you must use the ToggleHold or ForceHold function.\n" +
                  "May have unintended behaviour if this field is changed while the object is ACTIVE.")]
         public bool doNotUseInputSystem = false;
+        [Tooltip("Upon destroying or disabling this object, this prevents the input action reference to be disabled.")]
+        public bool doNotDisableAction;
         public InputActionReference holdAction;
 
         [Header("Hold Action Settings")]
@@ -150,8 +152,9 @@ namespace AdriKat.Toolkit.UIElements
                 doNotUseInputSystem = true;
                 return;
             }
-
-            holdAction.action.Disable();
+            
+            if (!doNotDisableAction) holdAction.action.Disable();
+            
             holdAction.action.performed -= ToggleHoldCtx;
             holdAction.action.canceled -= ToggleHoldCtx;
         }
