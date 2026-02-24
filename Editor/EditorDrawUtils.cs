@@ -225,8 +225,7 @@ namespace AdriKat.Toolkit.Utils
                 bool enterChildren = true;
                 while (iterator.NextVisible(enterChildren))
                 {
-                    if (iterator.name == "m_Script")
-                        continue;
+                    if (iterator.name == "m_Script") continue;
 
                     height += EditorGUI.GetPropertyHeight(iterator, true) + EditorGUIUtility.standardVerticalSpacing;
                     enterChildren = false;
@@ -236,6 +235,70 @@ namespace AdriKat.Toolkit.Utils
             return height;
         }
 
+        /// <summary>
+        /// Draws a property without a foldout.<br/>
+        /// Will produce the same result that EditorGUI.PropertyField if the property is not a generic.
+        /// </summary>
+        /// <param name="position">The space to use to draw the property.</param>
+        /// <param name="property">The property to draw.</param>
+        public static void DrawPropertyNoFoldout(Rect position, SerializedProperty property)
+        {
+            // Default unity draw if not generic or class.
+            if (!property.hasVisibleChildren || property.propertyType != SerializedPropertyType.Generic)
+            {
+                EditorGUI.PropertyField(position, property, GUIContent.none, true);
+                return;
+            }
+
+            // Draw children manually (always expanded, no foldout)
+            SerializedProperty copy = property.Copy();
+            SerializedProperty end = copy.GetEndProperty();
+
+            copy.NextVisible(true); // Enter children
+
+            while (!SerializedProperty.EqualContents(copy, end))
+            {
+                float height = EditorGUI.GetPropertyHeight(copy, GUIContent.none, true);
+                position.height = height;
+                EditorGUI.PropertyField(position, copy, true);
+
+                position.y += height + EditorGUIUtility.standardVerticalSpacing;
+
+                copy.NextVisible(false);
+            }
+        }
+
+        /// <summary>
+        /// Returns the total height of a property without a foldout.<br/>
+        /// Will return the same result that EditorGUI.GetPropertyHeight if the property is not a generic.
+        /// </summary>
+        /// <param name="property">The property to get the height from.</param>
+        /// <returns>The required height including all children for this property.</returns>
+        public static float GetPropertyHeightNoFoldout(SerializedProperty property)
+        {
+            // Default unity height if not generic or class.
+            if (!property.hasVisibleChildren || property.propertyType is not SerializedPropertyType.Generic)
+            {
+                return EditorGUI.GetPropertyHeight(property, GUIContent.none, true);
+            }
+
+            float totalHeight = 0f;
+
+            SerializedProperty copy = property.Copy();
+            SerializedProperty end = copy.GetEndProperty();
+
+            copy.NextVisible(true);
+
+            while (!SerializedProperty.EqualContents(copy, end))
+            {
+                totalHeight += EditorGUI.GetPropertyHeight(copy, GUIContent.none, true) + EditorGUIUtility.standardVerticalSpacing;
+
+                copy.NextVisible(false);
+            }
+
+            return totalHeight;
+        }
+        
         /// <summary>
         /// Executes a drawing action within a disabled GUI state if specified.
         /// </summary>

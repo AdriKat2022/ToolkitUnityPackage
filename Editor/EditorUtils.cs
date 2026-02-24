@@ -33,15 +33,16 @@ namespace AdriKat.Toolkit.Utils
                 }
             }
         }
-
+        
         /// <summary>
-        /// Evaluates a condition on a serialized object by checking for a boolean field or method
-        /// matching the specified condition name.
+        /// Evaluates a condition on a serialized object by checking for a boolean field or method matching the specified condition name.<br/>
+        /// If the comparerValue type matches the 
         /// </summary>
         /// <param name="serializedObject">The serialized object containing the condition to evaluate.</param>
         /// <param name="conditionName">The name of the field or method to check within the serialized object.</param>
+        /// <param name="comparerValue">The value to compare with the condition field if the type matches.</param>
         /// <returns>True if the condition is valid and evaluates to true; otherwise, false.</returns>
-        public static bool CheckConditionFromObject(SerializedObject serializedObject, string conditionName)
+        public static bool CheckConditionFromObject<T>(SerializedObject serializedObject, string conditionName, T comparerValue = default)
         {
             if (serializedObject == null || string.IsNullOrEmpty(conditionName)) return false;
             
@@ -53,6 +54,12 @@ namespace AdriKat.Toolkit.Utils
             var method = parentObjectType.GetMethod(conditionName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
             if (method != null)
             {
+                // Check if it's a method that returns the same type as the comparerValue and has no parameters.
+                if (method.ReturnType == typeof(T) && method.GetParameters().Length == 0)
+                {
+                    return comparerValue.Equals((T)method.Invoke(targetObject, null));
+                }
+                
                 // Check if it's a bool method and has no parameters.
                 if (method.ReturnType == typeof(bool) && method.GetParameters().Length == 0)
                 {
@@ -66,6 +73,10 @@ namespace AdriKat.Toolkit.Utils
             var field = parentObjectType.GetField(conditionName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
             if (field != null)
             {
+                if (field.FieldType == typeof(T))
+                {
+                    return comparerValue.Equals((T)field.GetValue(targetObject));
+                }
                 if (field.FieldType == typeof(bool))
                 {
                     return (bool)field.GetValue(targetObject);
@@ -74,6 +85,10 @@ namespace AdriKat.Toolkit.Utils
                 {
                     return field.GetValue(targetObject) != null;
                 }
+                if (field.FieldType == typeof(string))
+                {
+                    return string.IsNullOrEmpty((string)field.GetValue(targetObject));
+                }
                 Debug.LogError($"WarnAttribute: \"{conditionName}\" is not a boolean field or a object field!", serializedObject.targetObject);
                 return false;
             }
@@ -81,6 +96,18 @@ namespace AdriKat.Toolkit.Utils
             Debug.LogError($"WarnAttribute: \"{conditionName}\" cannot be found or isn't supported!\nOnly bool fields, class fields, and parameterless methods returning a bool are supported.", serializedObject.targetObject);
             
             return false;
+        }
+        
+        /// <summary>
+        /// Evaluates a condition on a serialized object by checking for a boolean field or method
+        /// matching the specified condition name.
+        /// </summary>
+        /// <param name="serializedObject">The serialized object containing the condition to evaluate.</param>
+        /// <param name="conditionName">The name of the field or method to check within the serialized object.</param>
+        /// <returns>True if the condition is valid and evaluates to true; otherwise, false.</returns>
+        public static bool CheckConditionFromObject(SerializedObject serializedObject, string conditionName)
+        {
+            return CheckConditionFromObject<NullType>(serializedObject, conditionName);
         }
 
         public static Object CreateObjectFromFunction(SerializedObject serializedObject, string functionName)
@@ -197,5 +224,13 @@ namespace AdriKat.Toolkit.Utils
         }
         
         #endregion
+
+        private class NullType
+        {
+            private NullType()
+            {
+                throw new InvalidOperationException("NullType serves as a NULL type should never be instantiated.");
+            }
+        }
     }
 }
