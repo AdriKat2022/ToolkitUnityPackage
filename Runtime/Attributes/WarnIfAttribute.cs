@@ -8,6 +8,7 @@ namespace AdriKat.Toolkit.Attributes
     {
         public readonly string ConditionName;
         public readonly string WarningMessage;
+        public readonly bool Invert;
         public readonly WarningTypeEnum WarningType;
         public readonly BoxStyle BoxStyling;
 
@@ -20,6 +21,7 @@ namespace AdriKat.Toolkit.Attributes
         public WarnIfAttribute(
             string conditionName,
             string warningMessage,
+            bool invert = false,
             bool showAfter = false,
             float xPadding = 0,
             float yPadding = 0,
@@ -30,7 +32,7 @@ namespace AdriKat.Toolkit.Attributes
             ConditionName = conditionName;
             WarningMessage = warningMessage;
             WarningType = warningType;
-            
+            Invert = invert;
             BoxStyling = new BoxStyle(xPadding, yPadding, additionalBoxHeight + 15, showAfter);
         }
 

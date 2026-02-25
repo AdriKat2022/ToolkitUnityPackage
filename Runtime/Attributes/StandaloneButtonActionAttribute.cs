@@ -6,11 +6,11 @@ namespace AdriKat.Toolkit.Attributes
     /// Attribute to make a method appear as a button in the inspector.
     /// </summary>
     [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple = true)]
-    public class OldButtonActionAttribute : PropertyAttribute
+    public class StandaloneButtonActionAttribute : PropertyAttribute
     {
         public readonly string Name;
 
-        public OldButtonActionAttribute(string name)
+        public StandaloneButtonActionAttribute(string name)
         {
             Name = name;
         }

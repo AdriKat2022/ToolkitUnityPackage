@@ -5,8 +5,9 @@ using UnityEngine;
 
 namespace AdriKat.Toolkit.Attributes
 {
+    [CanEditMultipleObjects]
     [CustomEditor(typeof(MonoBehaviour), true)]
-    public class ButtonDecoratorDrawer : Editor
+    public class StandaloneButtonDrawer : Editor
     {
         public override void OnInspectorGUI()
         {
@@ -20,15 +21,15 @@ namespace AdriKat.Toolkit.Attributes
 
             foreach (MethodInfo method in methods)
             {
-                OldButtonActionAttribute oldButtonAttribute = (OldButtonActionAttribute)Attribute.GetCustomAttribute(method, typeof(OldButtonActionAttribute));
+                StandaloneButtonActionAttribute standaloneButtonAttribute = (StandaloneButtonActionAttribute)Attribute.GetCustomAttribute(method, typeof(StandaloneButtonActionAttribute));
 
-                if (oldButtonAttribute == null)
+                if (standaloneButtonAttribute == null)
                 {
                     continue;
                 }
 
                 GUILayout.Space(2);
-                if (GUILayout.Button(oldButtonAttribute.Name))
+                if (GUILayout.Button(standaloneButtonAttribute.Name))
                 {
                     method.Invoke(targetScript, null);
                 }
