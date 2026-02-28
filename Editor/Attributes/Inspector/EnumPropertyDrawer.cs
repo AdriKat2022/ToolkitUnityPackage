@@ -7,13 +7,17 @@ namespace AdriKat.Toolkit.Attributes
     [CustomPropertyDrawer(typeof(EnumAttribute))]
     public class EnumPropertyDrawer : PropertyDrawer
     {
-        public readonly Color selectedBackgroundColor = new(42 / 256f, 42 / 256f, 42 / 256f, 1);
-        public readonly Color unselectedBackgroundColor = new(88 / 256f, 88 / 256f, 88 / 256f, 1);
+        private readonly Color selectedBackgroundColor = new(42 / 256f, 42 / 256f, 42 / 256f, 1);
+        private readonly Color unselectedBackgroundColor = new(88 / 256f, 88 / 256f, 88 / 256f, 1);
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             EnumAttribute enumAttribute = (EnumAttribute)attribute;
-
+            
+            // Show label and update the position
+            EditorGUI.LabelField(position, label);
+            position.xMin = position.x + EditorGUIUtility.labelWidth;
+            
             if (property.propertyType == SerializedPropertyType.String)
             {
                 if (enumAttribute.StringValues == null || enumAttribute.StringValues.Length == 0)
@@ -218,7 +222,7 @@ namespace AdriKat.Toolkit.Attributes
         }
 
         // Utility function to create a texture of the specified color
-        private Texture2D MakeTexture(int width, int height, Color color)
+        private static Texture2D MakeTexture(int width, int height, Color color)
         {
             Color[] pixels = new Color[width * height];
             for (int i = 0; i < pixels.Length; i++)

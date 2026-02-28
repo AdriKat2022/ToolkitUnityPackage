@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace AdriKat.Toolkit.Attributes
@@ -6,12 +7,13 @@ namespace AdriKat.Toolkit.Attributes
     /// Attribute to display a field as a toolbar, with specified values.<br/>
     /// Only supports string, int, and bool fields.
     /// </summary>
-    [System.AttributeUsage(System.AttributeTargets.Field | System.AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
     public class EnumAttribute : PropertyAttribute
     {
         public string[] StringValues { get; }
         public int[] IntValues { get; }
         public float[] FloatValues { get; }
+        
         /// <summary>
         /// Attribute to display a field as a toolbar, with specified values.<br/>
         /// Only supports string, int, and bool fields.<br/>
@@ -19,6 +21,7 @@ namespace AdriKat.Toolkit.Attributes
         /// </summary>
         /// <param name="values"></param>
         public EnumAttribute(params string[] values) => StringValues = values;
+        
         /// <summary>
         /// Attribute to display a field as a toolbar, with specified values.<br/>
         /// Only supports string, int, and bool fields.<br/>
@@ -26,6 +29,7 @@ namespace AdriKat.Toolkit.Attributes
         /// </summary>
         /// <param name="values"></param>
         public EnumAttribute(params int[] values) => IntValues = values;
+        
         /// <summary>
         /// Attribute to display a field as a toolbar, with specified values.<br/>
         /// Only supports string, int, and bool fields.<br/>
