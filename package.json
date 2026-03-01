@@ -1,11 +1,11 @@
 {
   "name": "com.adrikat.toolkit",
-  "version": "1.8.2",
+  "version": "2.0.0",
   "displayName": "AdriKat Toolkit",
   "description": "A collection of tools to help you develop your Unity projects faster.",
   "author": {
     "name": "AdriKat",
-    "email": "adrien.schroedel@gmail.com",
+    "email": "adrien.schroedel.pro@gmail.com",
     "url": "https://github.com/AdriKat2022/ToolkitUnityPackage"
   },
   "dependencies": {
