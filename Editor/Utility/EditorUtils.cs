@@ -120,7 +120,7 @@ namespace AdriKat.Toolkit.Utility
                 {
                     return (bool)method.Invoke(targetObject, null);
                 }
-                Debug.LogError($"WarnAttribute: \"{conditionName}\" must return a boolean value and have no parameters!", serializedObject.targetObject);
+                Debug.LogError($"\"{conditionName}\" must return a boolean value and have no parameters!", serializedObject.targetObject);
                 return false;
             }
             
@@ -150,11 +150,11 @@ namespace AdriKat.Toolkit.Utility
                 {
                     return fieldValue != null;
                 }
-                Debug.LogError($"WarnAttribute: \"{conditionName}\" is not a boolean field or a object field!", serializedObject.targetObject);
+                Debug.LogError($"\"{conditionName}\" is not a boolean field or a object field!", serializedObject.targetObject);
                 return false;
             }
 
-            Debug.LogError($"WarnAttribute: \"{conditionName}\" cannot be found or isn't supported!\nOnly bool fields, class fields, and parameterless methods returning a bool are supported.", serializedObject.targetObject);
+            Debug.LogError($"\"{conditionName}\" cannot be found or isn't supported!\nOnly bool fields, class fields, and parameterless methods returning a bool are supported.", serializedObject.targetObject);
             return false;
         }
         
@@ -171,11 +171,8 @@ namespace AdriKat.Toolkit.Utility
         }
         
         /// <summary>
-        /// Create
+        /// Runs the function of the given name on the given serializedObject.
         /// </summary>
-        /// <param name="serializedObject"></param>
-        /// <param name="functionName"></param>
-        /// <returns></returns>
         public static T RunMethodFromSerializedObject<T>(SerializedObject serializedObject, string functionName) where T : Object
         {
             if (serializedObject == null || functionName.IsNullOrEmpty()) return null;

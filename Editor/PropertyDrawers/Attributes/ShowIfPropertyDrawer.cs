@@ -22,8 +22,11 @@ namespace AdriKat.Toolkit.Attributes
             bool shouldShow = ComputeCondition(property.serializedObject, variableName, showIfAttribute);
             
             float faded = EditorUtils.GetBoolAnimationFade(property.GetUniqueIDFromProperty(), shouldShow, 2f);
+            
+            // The system always adds a standardVerticalSpacing between each property, even when HIDDEN by this attribute. So we compensate by subtracting it if we're faded.
+            float verticalSpacingCompensation = (1 - faded) * EditorGUIUtility.standardVerticalSpacing;
 
-            return faded * EditorGUI.GetPropertyHeight(property, label, true);
+            return faded * EditorGUI.GetPropertyHeight(property, label, true) - verticalSpacingCompensation;
         }
         
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -87,12 +90,12 @@ namespace AdriKat.Toolkit.Attributes
             return shouldShow;
         }
 
-        private void ManageFadeAnimation(Rect position, SerializedProperty property, GUIContent label, bool shouldShow)
+        private static void ManageFadeAnimation(Rect position, SerializedProperty property, GUIContent label, bool shouldShow)
         {
             float fade = EditorUtils.GetBoolAnimationFade(property.GetUniqueIDFromProperty(), shouldShow, 2f);
 
             // Get the full height the property would take at full opacity
-            float fullHeight = EditorGUI.GetPropertyHeight(property, label, true) + EditorGUIUtility.standardVerticalSpacing;
+            float fullHeight = EditorGUI.GetPropertyHeight(property, label, true);
             float labelWidth = EditorGUIUtility.labelWidth;
             
             EditorDrawUtils.DrawClippedFadeGroup(position, fade, fullHeight, rect =>
