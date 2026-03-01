@@ -1,5 +1,4 @@
-﻿using System;
-using AdriKat.Toolkit.Attributes;
+﻿using AdriKat.Toolkit.Attributes;
 using UnityEngine;
 using UnityEngine.EventSystems;
 

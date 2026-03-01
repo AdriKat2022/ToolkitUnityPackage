@@ -49,7 +49,6 @@ namespace AdriKat.Toolkit.Settings
             return _settings;
         }
 
-        
         public static void OpenSettingsForUser()
         {
             EditorUtility.OpenPropertyEditor(GetOrCreateSettings());

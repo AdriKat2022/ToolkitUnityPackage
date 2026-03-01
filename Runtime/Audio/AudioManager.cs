@@ -1,9 +1,9 @@
 ﻿using System.Collections;
-using UnityEngine;
 using System.Collections.Generic;
 using AdriKat.Toolkit.Attributes;
-using AdriKat.Toolkit.CodePatterns;
-using AdriKat.Toolkit.Utility;
+using AdriKat.Toolkit.DesignPatterns;
+using AdriKat.Toolkit.Utility.Extensions;
+using UnityEngine;
 
 namespace AdriKat.Toolkit.Audio
 {

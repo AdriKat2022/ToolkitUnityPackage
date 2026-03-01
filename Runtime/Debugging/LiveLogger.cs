@@ -1,5 +1,5 @@
-using AdriKat.Toolkit.CodePatterns;
 using System.Threading.Tasks;
+using AdriKat.Toolkit.DesignPatterns;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;

@@ -2,7 +2,7 @@
 
 namespace AdriKat.Toolkit.Attributes
 {
-    [System.AttributeUsage(System.AttributeTargets.Field, AllowMultiple = true)]
+    [System.AttributeUsage(System.AttributeTargets.Field)]
     public class ButtonActionAttribute : PropertyAttribute
     {
         public bool showButtonBelow;

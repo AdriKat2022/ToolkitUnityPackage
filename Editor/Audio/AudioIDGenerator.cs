@@ -1,12 +1,10 @@
 ﻿using System;
-using UnityEngine;
-using UnityEditor;
 using System.IO;
 using System.Text;
-using AdriKat.Toolkit.DataStructure;
-using AdriKat.Toolkit.Settings;
 using AdriKat.Toolkit.Utility;
-using AdriKat.Toolkit.Utils;
+using AdriKat.Toolkit.Utility.Extensions;
+using UnityEditor;
+using UnityEngine;
 
 // using AdriKat.Toolkit.Settings;
 
@@ -14,15 +12,23 @@ namespace AdriKat.Toolkit.Audio
 {
     public static class AudioIDGenerator
     {
+        private const string CLASS_FILENAME = "AudioIDs.cs";
+        
         private static string lastScriptLocation;
         
         [MenuItem("Toolkit/Audio/Refresh AudioIDs Script")]
         public static void GenerateAudioIDClass()
         {
-            var db = Resources.Load<AudioDatabase>("AudioDatabase");
+            AudioSettings audioSettings = AudioSettingsProvider.GetOrCreateSettings();
+            
+            // Load the database first from the settings, or from the 'resources' folder.
+            var db = audioSettings.DefaultAudioDatabase ?
+                audioSettings.DefaultAudioDatabase :
+                Resources.Load<AudioDatabase>("AudioDatabase");
+            
             if (db == null)
             {
-                Debug.LogError("Missing AudioDatabase in the Resources folder (Create->Audio->AudioDatabase). Ensure its name is exactly 'AudioDatabase.asset'.");
+                Debug.LogWarning("Missing AudioDatabase reference in Audio Settings, and no database has been found in the Resources folder (Create->Audio->AudioDatabase). Ensure its name is exactly 'AudioDatabase.asset'.");
                 return;
             }
             
@@ -55,31 +61,28 @@ namespace AdriKat.Toolkit.Audio
             if (audioIDType == null)
             {
                 // The script doesn't exist at all. Use the default path to create it.
-                path = AudioSettingsProvider.GetOrCreateSettings().audioIDClassPath;
-                Debug.Log($"Generating AudioIDs.cs at '{path}'...");
+                path = $"{audioSettings.AudioIDClassFolder}/{CLASS_FILENAME}";
+                Debug.Log($"Generating {CLASS_FILENAME} at '{path}'...");
+            }
+            else if (lastScriptLocation != null && File.Exists(lastScriptLocation))
+            {
+                // The previous file cache is "valid". Let's suppose it's not another file with the same name...
+                path = lastScriptLocation;
+                Debug.Log($"Updating {CLASS_FILENAME} at '{path}'...");
             }
             else
             {
-                if (lastScriptLocation != null && File.Exists(lastScriptLocation))
-                {
-                    // The previous file cache is "valid". Let's suppose it's not another file with the same name...
-                    path = lastScriptLocation;
-                }
-                else
-                {
-                    // Let's look for it ourselves (expensive).
-                    path = EditorUtils.FindScriptFilePath(audioIDType);
-                }
-                
-                Debug.Log($"Updating AudioIDs.cs at '{path}'...");
+                // Let's look for it ourselves (expensive).
+                path = EditorUtils.FindScriptFilePath(audioIDType);
+                Debug.Log($"Updating {CLASS_FILENAME} at '{path}'...");
             }
-
+                
             lastScriptLocation = path;
             
             EditorUtils.CreateFoldersRecursively(Path.GetDirectoryName(path));
             File.WriteAllText(path, sb.ToString());
 
-            if (AudioSettingsProvider.GetOrCreateSettings().refreshAssetsAfterGeneration)
+            if (audioSettings.RefreshAssetsAfterGeneration)
             {
                 AssetDatabase.Refresh();
             }

@@ -1,7 +1,6 @@
-﻿using System;
-using AdriKat.Toolkit.Attributes;
+﻿using AdriKat.Toolkit.Attributes;
 using AdriKat.Toolkit.Utility;
-using Toolkit.Runtime.Utility;
+using AdriKat.Toolkit.Utility.Extensions;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -16,13 +15,16 @@ namespace AdriKat.Toolkit.UIElements
         [Range(0, 1f)]
         public float smoothDrag = 0.1f;
         
-        public bool controlPivot;
+        [Tooltip("Takes control of the rectTransform's pivot such as the opposite grabbed corner stays in place while resizing.")]
+        public bool controlRectTransformPivot;
+        [ShowIf(nameof(controlRectTransformPivot))]
+        public TextAnchor grabbableCorner;
+        [ShowIf(nameof(controlRectTransformPivot))]
         public bool controlKnobPosition;
-        [ShowIf(nameof(controlPivot))]
-        public TextAnchor grabbedAnchor;
 
         public RectConstraints sizeConstraints;
         
+        private RectTransform rectTransform;
         private Vector2 _rectSizeOnBeginDrag;
         private Vector2 _mousePosOnBeginDrag;
         private Vector2 _targetSize; // Mouse last pos
@@ -30,9 +32,18 @@ namespace AdriKat.Toolkit.UIElements
 
         private void Start()
         {
-            if (controlKnobPosition)
+            rectTransform = GetComponent<RectTransform>();
+            
+            if (controlRectTransformPivot)
             {
-                rectTransformToResize.SetPivot(grabbedAnchor.GetOppositeAnchor());
+                rectTransformToResize.SetPivot(grabbableCorner.GetOppositeAnchor());
+
+                if (controlKnobPosition)
+                {
+                    rectTransform.SetPivot(TextAnchor.MiddleCenter);
+                    rectTransform.SetAnchor(grabbableCorner);
+                    rectTransform.anchoredPosition = Vector2.zero;
+                }
             }
         }
 
@@ -41,7 +52,7 @@ namespace AdriKat.Toolkit.UIElements
             if (!_isDragging) return;
 
             var sizeDelta = Vector2.Lerp(rectTransformToResize.sizeDelta, _targetSize, Time.deltaTime / (smoothDrag + 0.001f));
-            sizeConstraints.UpdateConstraints();
+            sizeConstraints.UpdateConstraintsFromRectTransform();
             sizeDelta = sizeConstraints.GetConstrainedSize(sizeDelta);
             
             rectTransformToResize.sizeDelta = sizeDelta;
@@ -49,9 +60,9 @@ namespace AdriKat.Toolkit.UIElements
 
         public void OnBeginDrag(PointerEventData eventData)
         {
-            if (controlPivot)
+            if (controlRectTransformPivot)
             {
-                rectTransformToResize.SetPivot(grabbedAnchor.GetOppositeAnchor(), true);
+                rectTransformToResize.SetPivot(grabbableCorner.GetOppositeAnchor(), true);
             }
             
             _rectSizeOnBeginDrag = rectTransformToResize.rect.size;
@@ -82,7 +93,7 @@ namespace AdriKat.Toolkit.UIElements
 
         private void OnValidate()
         {
-            sizeConstraints.UpdateConstraints();
+            sizeConstraints.UpdateConstraintsFromRectTransform();
             rectTransformToResize.sizeDelta = sizeConstraints.GetConstrainedSize(rectTransformToResize.sizeDelta);
 
             // Place the knob accordingly to the grabbedAnchor 
@@ -90,7 +101,7 @@ namespace AdriKat.Toolkit.UIElements
             if (controlKnobPosition && transform.parent != null && rectTransform != null)
             {
                 rectTransform.SetPivot(TextAnchor.MiddleCenter);
-                rectTransform.SetAnchor(grabbedAnchor);
+                rectTransform.SetAnchor(grabbableCorner);
                 rectTransform.anchoredPosition = Vector2.zero;
             }
         }

@@ -1,7 +1,6 @@
 using TMPro;
 using UnityEngine;
 
-
 namespace AdriKat.Toolkit.UIElements
 {
     public class SimpleTimer : MonoBehaviour

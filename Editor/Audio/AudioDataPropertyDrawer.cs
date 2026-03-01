@@ -1,5 +1,4 @@
-﻿using AdriKat.Toolkit.Settings;
-using AdriKat.Toolkit.Utils;
+﻿using AdriKat.Toolkit.Utility;
 using UnityEditor;
 using UnityEngine;
 
@@ -16,13 +15,11 @@ namespace AdriKat.Toolkit.Audio
         {
             float height = EditorGUIUtility.singleLineHeight + 4; // For the object reference field
 
-            if (property.objectReferenceValue == null)
-                return height;
+            if (property.objectReferenceValue == null) return height;
 
             height += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
 
-            if (!foldout)
-                return height;
+            if (!foldout) return height;
 
             SerializedObject so = new SerializedObject(property.objectReferenceValue);
 
@@ -43,7 +40,11 @@ namespace AdriKat.Toolkit.Audio
             if (property.objectReferenceValue == null)
             {
                 // Handle Drag & Drop of an AudioClip (only if the reference is null).
-                HandleAudioClipDragAndDrop(property, refRect);
+                EditorDrawUtils.SetDragAndDropCallback<AudioClip>(refRect, objects =>
+                {
+                    property.objectReferenceValue = CreateAudioDataAssetFromAudioClip(objects[0] as AudioClip);
+                    return true;
+                }, 1);
 
                 // Make a create button.
                 if (GUI.Button(new Rect(refRect.x + refRect.width, refRect.y, BUTTON_WIDTH, EditorGUIUtility.singleLineHeight), "Create"))
@@ -51,7 +52,7 @@ namespace AdriKat.Toolkit.Audio
                     AudioData newAudioData = ScriptableObject.CreateInstance<AudioData>();
                     newAudioData.id = property.name;
                     
-                    string creationFolder = AudioSettingsProvider.GetOrCreateSettings().defaultAudioDataCreationFolder;
+                    string creationFolder = AudioSettingsProvider.GetOrCreateSettings().AudioDataCreationFolder;
                     EditorUtils.CreateFoldersRecursively(creationFolder);
                     AssetDatabase.CreateAsset(newAudioData, $"{creationFolder}/{property.name}.asset");
                     AssetDatabase.SaveAssets();
@@ -76,64 +77,44 @@ namespace AdriKat.Toolkit.Audio
             so.Update();
 
             float y = foldoutRect.yMax + 4;
-            float fieldHeight;
 
-            y = DrawProp(so, nameof(AudioData.clip), position, y, out fieldHeight);
-            y = DrawProp(so, nameof(AudioData.volumeMultiplier), position, y, out fieldHeight);
-            y = DrawProp(so, nameof(AudioData.id), position, y, out fieldHeight);
+            y = DrawProp(so, nameof(AudioData.clip), position, y, out float _);
+            y = DrawProp(so, nameof(AudioData.volumeMultiplier), position, y, out float _);
+            y = DrawProp(so, nameof(AudioData.id), position, y, out float _);
 
             so.ApplyModifiedProperties();
 
             EditorGUI.indentLevel--;
         }
-
-        private static void HandleAudioClipDragAndDrop(SerializedProperty property, Rect refRect)
-        {
-            Event evt = Event.current;
-            if (evt.type == EventType.DragUpdated || evt.type == EventType.DragPerform)
-            {
-                if (refRect.Contains(evt.mousePosition))
-                {
-                    DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-
-                    if (evt.type == EventType.DragPerform)
-                    {
-                        DragAndDrop.AcceptDrag();
-
-                        foreach (Object dragged in DragAndDrop.objectReferences)
-                        {
-                            if (dragged is AudioClip clip)
-                            {
-                                // Create a new SoundEvent
-                                AudioData newAudioData = ScriptableObject.CreateInstance<AudioData>();
-                                newAudioData.clip = clip;
-                                newAudioData.id = clip.name;
-                                newAudioData.volumeMultiplier = 1f;
-
-                                string assetPath = $"{AudioSettingsProvider.GetOrCreateSettings().defaultAudioDataCreationFolder}/{clip.name}.asset";
-                                AssetDatabase.CreateAsset(newAudioData, assetPath);
-                                AssetDatabase.SaveAssets();
-                                AssetDatabase.Refresh();
-
-                                property.objectReferenceValue = newAudioData;
-                                GUI.changed = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    evt.Use();
-                }
-            }
-        }
-
-        private float DrawProp(SerializedObject so, string propName, Rect position, float y, out float height, bool includeChildren = false)
+        
+        private static float DrawProp(SerializedObject so, string propName, Rect position, float y, out float height, bool includeChildren = false)
         {
             SerializedProperty prop = so.FindProperty(propName);
             height = EditorGUI.GetPropertyHeight(prop, includeChildren);
             Rect rect = new Rect(position.x, y, position.width, height);
             EditorGUI.PropertyField(rect, prop, includeChildren);
             return y + height + 2;
+        }
+
+        internal static AudioData CreateAudioDataAssetFromAudioClip(AudioClip clip, bool saveAndRefreshAssets = true)
+        {
+            AudioData newAudioData = ScriptableObject.CreateInstance<AudioData>();
+            newAudioData.clip = clip;
+            newAudioData.id = clip.name;
+            newAudioData.volumeMultiplier = 1f;
+
+            string assetFolder = AudioSettingsProvider.GetOrCreateSettings().AudioDataCreationFolder;
+            string assetPath = $"{assetFolder}/{clip.name}.asset";
+            EditorUtils.CreateFoldersRecursively(assetFolder);
+            AssetDatabase.CreateAsset(newAudioData, assetPath);
+
+            if (saveAndRefreshAssets)
+            {
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
+            
+            return newAudioData;
         }
     }
 }

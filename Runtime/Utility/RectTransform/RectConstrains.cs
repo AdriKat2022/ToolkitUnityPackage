@@ -6,7 +6,7 @@ namespace AdriKat.Toolkit.Utility
     [Serializable]
     public struct RectConstraints
     {
-        public RectTransform fitInRectTransform;
+        public UnityEngine.RectTransform fitInRectTransform;
         public bool useRectTransformWidthAsMin;
         public bool useRectTransformWidthAsMax;
         public bool useRectTransformWidthToFit;
@@ -19,7 +19,7 @@ namespace AdriKat.Toolkit.Utility
         public float minHeight;
         public float maxHeight;
         
-        public RectConstraints(RectTransform fitInRectTransform,
+        public RectConstraints(UnityEngine.RectTransform fitInRectTransform,
                                bool useRectTransformWidthAsMin,
                                bool useRectTransformWidthAsMax,
                                bool useRectTransformWidthToFit,
@@ -94,7 +94,7 @@ namespace AdriKat.Toolkit.Utility
             return new Vector2(GetConstrainedWidth(size.x), GetConstrainedHeight(size.y));
         }
 
-        public void UpdateConstraints()
+        public void UpdateConstraintsFromRectTransform()
         {
             if (fitInRectTransform == null)
             {

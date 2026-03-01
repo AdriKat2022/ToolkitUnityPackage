@@ -1,10 +1,13 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class FocusOnClick : MonoBehaviour, IPointerClickHandler
+namespace AdriKat.Toolkit.UIElements
 {
-    public void OnPointerClick(PointerEventData eventData)
+    public class FocusOnClick : MonoBehaviour, IPointerClickHandler
     {
-        transform.SetAsLastSibling();
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            transform.SetAsLastSibling();
+        }
     }
 }

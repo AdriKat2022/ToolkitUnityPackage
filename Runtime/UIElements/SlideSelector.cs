@@ -1,7 +1,7 @@
 ﻿using System;
 using AdriKat.Toolkit.Attributes;
-using AdriKat.Toolkit.DataStructure;
 using AdriKat.Toolkit.Mathematics;
+using AdriKat.Toolkit.Utility.Extensions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
