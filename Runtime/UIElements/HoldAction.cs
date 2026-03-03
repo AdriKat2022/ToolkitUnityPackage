@@ -72,7 +72,7 @@ namespace AdriKat.Toolkit.UIElements
 
         [Header("Debug Log")]
         public bool debug = false;
-
+        
         private bool _wasHeldAtLeastOnce = false;
         private bool _onCooldown = false;
         private bool _isHolding = false;
@@ -93,6 +93,15 @@ namespace AdriKat.Toolkit.UIElements
         }
 
         /// <summary>
+        /// Stops forcing the holdAction to be held.
+        /// </summary>
+        public void StopForceHold()
+        {
+            _forceHolding = false;
+            ToggleHold(holdAction.action.IsPressed());
+        }
+
+        /// <summary>
         /// Toggles the hold action.<br/>
         /// Automatically called by an InputAction callback context, but you can call it manually if you want your own input system.<br/>
         /// Especially if you do not want to use the default Input System of this script.<br/>
@@ -106,7 +115,6 @@ namespace AdriKat.Toolkit.UIElements
             _isHolding = holding;
 
             if (_onCooldown) return;
-
             
             _wasHeldAtLeastOnce |= holding;
 
@@ -206,7 +214,7 @@ namespace AdriKat.Toolkit.UIElements
         private void HoldTimeCompleted()
         {
             _onCooldown = true;
-            onHoldCompleted.Invoke();
+            onHoldCompleted?.Invoke();
             ToggleHold(false);
             _successAnimation = StartCoroutine(SuccessAnimation());
             _cooldownTimer = cooldownAfterSuccessAction;
