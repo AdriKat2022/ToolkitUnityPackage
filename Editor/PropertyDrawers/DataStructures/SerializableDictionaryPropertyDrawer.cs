@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using AdriKat.Toolkit.Attributes;
 using AdriKat.Toolkit.Utility;
 using UnityEditor;
 using UnityEditorInternal;
@@ -16,8 +17,13 @@ namespace AdriKat.Toolkit.DataStructures
         private const float KEY_WIDTH_PROPORTION = 0.4f;
         private const float LABEL_WIDTH_PROPORTION = 0.4f;
 
+        private DictionaryDisplay dictionaryDisplay;
+        
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            dictionaryDisplay = property.GetCustomAttribute<SerializableDictionaryAttribute>()?.DictionaryDisplay
+                                ?? DictionaryDisplay.OnePropertyPerLine;
+            
             var list = GetList(property, label);
             list.DoList(position);
         }
@@ -57,7 +63,9 @@ namespace AdriKat.Toolkit.DataStructures
                 var valueProp = element.FindPropertyRelative("Value");
 
                 float keyHeight = EditorGUI.GetPropertyHeight(keyProp, true);
-                float valueHeight = EditorDrawUtils.GetPropertyHeightNoFoldout(valueProp);
+                float valueHeight = dictionaryDisplay == DictionaryDisplay.OnePropertyPerLine ?
+                    EditorDrawUtils.GetPropertyHeightNoFoldout(valueProp) :
+                    EditorGUI.GetPropertyHeight(valueProp, true);
 
                 return Mathf.Max(keyHeight, valueHeight) + ELEMENT_SPACING_VERTICAL;
             };
@@ -83,14 +91,24 @@ namespace AdriKat.Toolkit.DataStructures
                 Rect valueRect = new Rect(
                     rect.x + keyRect.width + 40,
                     rect.y,
-                    rect.width - keyWidth, EditorDrawUtils.GetPropertyHeightNoFoldout(valueProp)
+                    rect.width - keyWidth,
+                    dictionaryDisplay == DictionaryDisplay.OnePropertyPerLine ?
+                        EditorDrawUtils.GetPropertyHeightNoFoldout(valueProp) :
+                        EditorGUI.GetPropertyHeight(valueProp, true)
                 );
 
                 float previous = EditorGUIUtility.labelWidth;
                 EditorGUIUtility.labelWidth = valueRect.width * KEY_WIDTH_PROPORTION;
                 
                 EditorGUI.PropertyField(keyRect, keyProp, GUIContent.none, true);
-                EditorDrawUtils.DrawPropertyNoFoldout(valueRect, valueProp);
+                if (dictionaryDisplay == DictionaryDisplay.OnePropertyPerLine)
+                {
+                    EditorDrawUtils.DrawPropertyNoFoldout(valueRect, valueProp);
+                }
+                else
+                {
+                    EditorGUI.PropertyField(valueRect, valueProp, GUIContent.none, true);
+                }
                 
                 EditorGUIUtility.labelWidth = previous;
 

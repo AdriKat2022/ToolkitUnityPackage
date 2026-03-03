@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using AdriKat.Toolkit.Utility.Extensions;
 using UnityEditor;
 using UnityEditor.AnimatedValues;
@@ -33,6 +36,88 @@ namespace AdriKat.Toolkit.Utility
                 }
             }
         }
+        
+        #region Attribute Utility
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="property"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static T GetCustomAttribute<T>(this SerializedProperty property) where T : Attribute
+        {
+            if (property == null) return null;
+
+            var targetObject = property.serializedObject.targetObject;
+            var fieldInfo = GetFieldInfoFromProperty(property, targetObject);
+
+            return fieldInfo?.GetCustomAttribute<T>(true);
+        }
+
+        private static FieldInfo GetFieldInfoFromProperty(SerializedProperty property, object target)
+        {
+            if (property == null || target == null) return null;
+
+            Type type = target.GetType();
+            string path = property.propertyPath;
+
+            // Replace array syntax: Array.data[x] -> [x]
+            path = Regex.Replace(path, @"\.Array\.data\[(\d+)\]", "[$1]");
+
+            string[] elements = path.Split('.');
+
+            FieldInfo fieldInfo = null;
+
+            foreach (var element in elements)
+            {
+                if (element.Contains("["))
+                {
+                    // Array or List element
+                    string elementName = element.Substring(0, element.IndexOf("["));
+                    fieldInfo = GetField(type, elementName);
+                    
+                    if (fieldInfo == null) return null;
+
+                    type = GetElementType(fieldInfo.FieldType);
+                }
+                else
+                {
+                    fieldInfo = GetField(type, element);
+                    
+                    if (fieldInfo == null) return null;
+
+                    type = fieldInfo.FieldType;
+                }
+            }
+
+            return fieldInfo;
+        }
+
+        private static FieldInfo GetField(Type type, string name)
+        {
+            while (type != null)
+            {
+                var field = type.GetField(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                
+                if (field != null) return field;
+
+                type = type.BaseType;
+            }
+
+            return null;
+        }
+
+        private static Type GetElementType(Type type)
+        {
+            if (type.IsArray) return type.GetElementType();
+
+            if (type.IsGenericType && typeof(IList).IsAssignableFrom(type)) return type.GetGenericArguments()[0];
+
+            return type;
+        }
+        
+        #endregion
         
         #region Value Extraction
         
