@@ -57,9 +57,20 @@ namespace AdriKat.Toolkit.Utility
 
             evt.Use();
         }
+        
         #endregion
         
         #region Draw
+        
+        /// <summary>
+        /// Draws a horizontal line using EditorGUILayout.
+        /// </summary>
+        /// <param name="height"></param>
+        public static void HorizontalLine(int height = 1)
+        {
+            Rect rect = EditorGUILayout.GetControlRect(false, height);
+            EditorGUI.DrawRect(rect, new Color(0.3f, 0.3f, 0.3f, 1));
+        }
         
         /// <summary>
         /// Draws content inside a clipped, swipe-fade group (like EditorGUILayout.BeginFadeGroup).

@@ -42,8 +42,6 @@ namespace AdriKat.Toolkit.Mathematics
 
         public static float GetAngleDeg(float x, float y)
         {
-            Debug.Log($"{x}, {y}: {Mathf.Atan2(y, x)}");
-            
             return Mathf.Atan2(y, x) * Mathf.Rad2Deg;
         }
 
