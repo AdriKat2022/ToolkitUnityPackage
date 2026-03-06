@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace AdriKat.Toolkit.Mathematics
 {
-    public class Mathematics
+    public static class MathematicsUtils
     {
         public enum ClipBehaviour
         {
@@ -38,6 +38,18 @@ namespace AdriKat.Toolkit.Mathematics
             }
 
             return 1 - (value - fromMin) / (fromMax - fromMin);
+        }
+
+        public static float GetAngleDeg(float x, float y)
+        {
+            Debug.Log($"{x}, {y}: {Mathf.Atan2(y, x)}");
+            
+            return Mathf.Atan2(y, x) * Mathf.Rad2Deg;
+        }
+
+        public static float GetAngle(float x, float y)
+        {
+            return Mathf.Atan2(y, x);
         }
     }
 }

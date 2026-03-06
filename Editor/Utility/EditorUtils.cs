@@ -40,7 +40,7 @@ namespace AdriKat.Toolkit.Utility
         #region Attribute Utility
         
         /// <summary>
-        /// 
+        /// Retrieves the given custom attribute attached onto the given property if it exists. 
         /// </summary>
         /// <param name="property"></param>
         /// <typeparam name="T"></typeparam>
@@ -74,7 +74,7 @@ namespace AdriKat.Toolkit.Utility
                 if (element.Contains("["))
                 {
                     // Array or List element
-                    string elementName = element.Substring(0, element.IndexOf("["));
+                    string elementName = element[..element.IndexOf("[", StringComparison.InvariantCulture)];
                     fieldInfo = GetField(type, elementName);
                     
                     if (fieldInfo == null) return null;
