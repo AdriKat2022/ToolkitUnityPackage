@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using AdriKat.Toolkit.DataStructures;
 
@@ -24,6 +25,18 @@ namespace AdriKat.Toolkit.Utility.Extensions
         public static bool IsNullOrEmpty<T>(this T[] array)
         {
             return (array == null || array.Length == 0);
+        }
+
+        public static T[] InitializeArrayWithValue<T>(int count, T value)
+        {
+            T[] array = new T[count];
+
+            for (var i = 0; i < count; i++)
+            {
+                array[i] = value;
+            }
+
+            return array;
         }
     }
 }

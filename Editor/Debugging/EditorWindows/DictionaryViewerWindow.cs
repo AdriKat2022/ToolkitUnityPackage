@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using AdriKat.Toolkit.Utility;
+using AdriKat.Toolkit.Utility.Extensions;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,6 +12,7 @@ namespace AdriKat.Toolkit.Debugging
     public class DictionaryViewerWindow : EditorWindow
     {
         private UnityEngine.Object targetObject;
+        private UnityEngine.Object lastScannedObject;
         private Vector2 scroll;
         private bool repaintContinuously;
         
@@ -46,9 +48,10 @@ namespace AdriKat.Toolkit.Debugging
 
             scroll = EditorGUILayout.BeginScrollView(scroll);
             
-            if (dictionaryFieldInfosCache == null)
+            if (dictionaryFieldInfosCache == null || lastScannedObject != targetObject)
             {
                 ExtractDictionariesFromObject(targetObject, out dictionaryFieldInfosCache);
+                lastScannedObject = targetObject;
             }
             
             EditorGUILayout.Space();
@@ -59,7 +62,7 @@ namespace AdriKat.Toolkit.Debugging
             
             EditorGUI.indentLevel++;
             
-            DisplayDictionaries(targetObject, dictionaryFieldInfosCache, foldouts);
+            DisplayDictionaries(targetObject, dictionaryFieldInfosCache, ref foldouts);
             
             EditorGUI.indentLevel--;
 
@@ -71,9 +74,9 @@ namespace AdriKat.Toolkit.Debugging
             EditorGUILayout.EndScrollView();
         }
 
-        private static void DisplayDictionaries(object obj, List<FieldInfo> fieldInfosCache, bool[] foldoutBools)
+        private static void DisplayDictionaries(object obj, List<FieldInfo> fieldInfosCache, ref bool[] foldoutBools)
         {
-            foldoutBools ??= new bool[fieldInfosCache.Count];
+            foldoutBools ??= CollectionUtility.InitializeArrayWithValue(fieldInfosCache.Count, true);
 
             for (var index = 0; index < fieldInfosCache.Count; index++)
             {
@@ -82,21 +85,24 @@ namespace AdriKat.Toolkit.Debugging
 
                 EditorDrawUtils.HorizontalLine();
 
-                EditorGUILayout.Space();
 
+                foldoutBools[index] = EditorGUILayout.Foldout(foldoutBools[index], field.Name, true);
+                
+                if (!foldoutBools[index])
+                {
+                    continue;
+                }
+                
+                EditorGUILayout.Space();
+                
                 if (value == null)
                 {
-                    EditorGUILayout.LabelField($"{field.Name}", EditorStyles.largeLabel);
-                    EditorGUI.indentLevel++;
-                    EditorGUILayout.LabelField($"This dictionary is NULL.", EditorStyles.centeredGreyMiniLabel);
-                    EditorGUI.indentLevel--;
-
+                    EditorGUILayout.LabelField("This dictionary is NULL.", EditorStyles.centeredGreyMiniLabel);
+                    EditorGUILayout.Space(20);
                     continue;
                 }
 
                 IDictionary dictionary = value as IDictionary;
-
-                EditorGUILayout.LabelField($"{field.Name}", EditorStyles.largeLabel);
 
                 EditorGUI.indentLevel++;
 
@@ -114,9 +120,9 @@ namespace AdriKat.Toolkit.Debugging
 
                 if (!hasAnEntry) EditorGUILayout.LabelField("No entry was found in this dictionary.", EditorStyles.miniLabel);
 
-                EditorGUILayout.Space(20);
-
                 EditorGUI.indentLevel--;
+                
+                EditorGUILayout.Space(20);
             }
         }
 
