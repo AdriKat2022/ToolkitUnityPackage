@@ -12,9 +12,10 @@ namespace AdriKat.Toolkit.Debugging
     {
         private UnityEngine.Object targetObject;
         private Vector2 scroll;
-        private bool repaintContinuously = false;
+        private bool repaintContinuously;
         
         private List<FieldInfo> dictionaryFieldInfosCache;
+        private bool[] foldouts;
         
         [MenuItem("Toolkit/Debugging/Dictionary Viewer")]
         public static void ShowWindow()
@@ -58,7 +59,7 @@ namespace AdriKat.Toolkit.Debugging
             
             EditorGUI.indentLevel++;
             
-            DisplayDictionaries(targetObject, dictionaryFieldInfosCache);
+            DisplayDictionaries(targetObject, dictionaryFieldInfosCache, foldouts);
             
             EditorGUI.indentLevel--;
 
@@ -70,43 +71,51 @@ namespace AdriKat.Toolkit.Debugging
             EditorGUILayout.EndScrollView();
         }
 
-        private static void DisplayDictionaries(object obj, List<FieldInfo> fieldInfosCache)
+        private static void DisplayDictionaries(object obj, List<FieldInfo> fieldInfosCache, bool[] foldoutBools)
         {
-            foreach (FieldInfo field in fieldInfosCache)
+            foldoutBools ??= new bool[fieldInfosCache.Count];
+
+            for (var index = 0; index < fieldInfosCache.Count; index++)
             {
+                FieldInfo field = fieldInfosCache[index];
                 object value = field.GetValue(obj);
-                
+
                 EditorDrawUtils.HorizontalLine();
-                
+
+                EditorGUILayout.Space();
+
                 if (value == null)
                 {
-                    EditorGUILayout.LabelField($"Found dictionary: {field.Name}", "NULL");
+                    EditorGUILayout.LabelField($"{field.Name}", EditorStyles.largeLabel);
+                    EditorGUI.indentLevel++;
+                    EditorGUILayout.LabelField($"This dictionary is NULL.", EditorStyles.centeredGreyMiniLabel);
+                    EditorGUI.indentLevel--;
+
                     continue;
                 }
 
                 IDictionary dictionary = value as IDictionary;
 
-                EditorGUILayout.Space();
-                EditorGUILayout.LabelField($"Found dictionary: {field.Name}", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField($"{field.Name}", EditorStyles.largeLabel);
 
                 EditorGUI.indentLevel++;
 
                 bool hasAnEntry = false;
-                
+
                 foreach (DictionaryEntry entry in dictionary)
                 {
                     string keyString = entry.Key != null ? entry.Key.ToString() : "NULL";
                     string valueString = entry.Value != null ? entry.Value.ToString() : "NULL";
 
                     hasAnEntry = true;
-                    
+
                     EditorGUILayout.LabelField(keyString, valueString);
                 }
 
                 if (!hasAnEntry) EditorGUILayout.LabelField("No entry was found in this dictionary.", EditorStyles.miniLabel);
-                
+
                 EditorGUILayout.Space(20);
-                
+
                 EditorGUI.indentLevel--;
             }
         }
