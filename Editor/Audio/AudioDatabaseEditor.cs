@@ -15,12 +15,13 @@ namespace AdriKat.Toolkit.Audio
         private SerializedProperty allSoundsProp;
 
         private string searchFilter = "";
-        private string audioClipsFolder = AudioSettingsProvider.GetOrCreateSettings().DefaultAudioClipsFolder;
+        private string audioClipsFolder;
         private bool enableDatabaseSynchronisation;
         private bool deleteLinkedAudioData;
         
         private void OnEnable()
         {
+            audioClipsFolder = AudioSettingsProvider.GetOrCreateSettings().DefaultAudioClipsFolder;
             allSoundsProp = serializedObject.FindProperty("allSounds");
 
             list = new ReorderableList(serializedObject, allSoundsProp, true, true, true, true);
