@@ -14,7 +14,7 @@ namespace AdriKat.Toolkit.Utility
     public static class EditorUtils
     {
         private static readonly Dictionary<string, AnimBool> _fadeAnimations = new();
-        
+
         /// <summary>
         /// Repaints all inspector editor windows.
         /// </summary>
@@ -22,7 +22,7 @@ namespace AdriKat.Toolkit.Utility
         {
             // Debug.Log("REPAINT");
             // Find all Inspector windows and repaint them
-            var inspectorType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.InspectorWindow");
+            var inspectorType = typeof(Editor).Assembly.GetType("UnityEditor.InspectorWindow");
             var windows = Resources.FindObjectsOfTypeAll(inspectorType);
 
             foreach (var window in windows)
@@ -36,9 +36,9 @@ namespace AdriKat.Toolkit.Utility
                 }
             }
         }
-        
+
         #region Attribute Utility
-        
+
         /// <summary>
         /// Retrieves the given custom attribute attached onto the given property if it exists. 
         /// </summary>
@@ -76,7 +76,7 @@ namespace AdriKat.Toolkit.Utility
                     // Array or List element
                     string elementName = element[..element.IndexOf("[", StringComparison.InvariantCulture)];
                     fieldInfo = GetField(type, elementName);
-                    
+
                     if (fieldInfo == null) return null;
 
                     type = GetElementType(fieldInfo.FieldType);
@@ -84,7 +84,7 @@ namespace AdriKat.Toolkit.Utility
                 else
                 {
                     fieldInfo = GetField(type, element);
-                    
+
                     if (fieldInfo == null) return null;
 
                     type = fieldInfo.FieldType;
@@ -99,7 +99,7 @@ namespace AdriKat.Toolkit.Utility
             while (type != null)
             {
                 var field = type.GetField(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                
+
                 if (field != null) return field;
 
                 type = type.BaseType;
@@ -116,11 +116,37 @@ namespace AdriKat.Toolkit.Utility
 
             return type;
         }
+
+        private static object GetParentObjectOfSerializedProperty(SerializedProperty property)
+        {
+            object obj = property.serializedObject.targetObject;
+
+            string[] path = property.propertyPath.Split('.');
+
+            // Remove the final field name because we want the parent
+            for (int i = 0; i < path.Length - 1; i++)
+            {
+                FieldInfo field = obj.GetType().GetField(
+                    path[i],
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+                );
+
+                if (field == null)
+                    return null;
+
+                obj = field.GetValue(obj);
+
+                if (obj == null)
+                    return null;
+            }
+
+            return obj;
+        }
         
         #endregion
-        
+
         #region Value Extraction
-        
+
         /// <summary>
         /// Turns a SerializedProperty into an array of SerializedProperties with each of its elements.
         /// </summary>
@@ -161,37 +187,151 @@ namespace AdriKat.Toolkit.Utility
 
             return result;
         }
+
+        public static SerializedProperty FindRelativeProperty(this SerializedProperty property, string variableName)
+        {
+            string path = property.propertyPath;
+
+            int lastDot = path.LastIndexOf('.');
+
+            path = lastDot >= 0 ? path[..(lastDot + 1)] : "";
+
+            return property.serializedObject.FindProperty(path + variableName);
+        }
+
+        #endregion
+
+        #region Reflection Access
         
         /// <summary>
-        /// Retrieves the value of a property.
+        /// Evaluates a condition on a serialized property by checking its value.
+        /// Supports booleans, strings, numbers, enums, objects and comparisons.
         /// </summary>
-        public static object GetPropertyValue(this SerializedObject serializedObject, string propertyName)
+        /// <param name="serializedProperty">The serialized property to compare.</param>
+        /// <param name="comparerValue">The value to compare with. If omitted, the property is checked for truthiness.</param>
+        /// <returns>True if the property matches the condition; otherwise false.</returns>
+        public static bool CompareSerializedProperty<T>(SerializedProperty serializedProperty, T comparerValue)
         {
-            return serializedObject.FindProperty(propertyName)?.boxedValue;
+            if (serializedProperty == null) return false;
+
+            switch (serializedProperty.propertyType)
+            {
+                case SerializedPropertyType.Boolean:
+                {
+                    bool value = serializedProperty.boolValue;
+
+                    if (typeof(T) == typeof(bool))
+                        return value == (bool)(object)comparerValue;
+
+                    return value;
+                }
+
+                case SerializedPropertyType.String:
+                {
+                    string value = serializedProperty.stringValue;
+
+                    if (typeof(T) == typeof(string))
+                        return value == (string)(object)comparerValue;
+
+                    return !string.IsNullOrEmpty(value);
+                }
+
+                case SerializedPropertyType.Integer:
+                {
+                    long value = serializedProperty.longValue;
+
+                    if (typeof(T).IsEnum ||
+                        typeof(T) == typeof(int) ||
+                        typeof(T) == typeof(long))
+                        return value == Convert.ToInt64(comparerValue);
+
+                    return value != 0;
+                }
+
+                case SerializedPropertyType.Float:
+                {
+                    float value = serializedProperty.floatValue;
+
+                    if (typeof(T) == typeof(float))
+                        return Mathf.Approximately(value, Convert.ToSingle(comparerValue));
+
+                    return !Mathf.Approximately(value, 0f);
+                }
+
+                case SerializedPropertyType.Enum:
+                {
+                    int value = serializedProperty.enumValueIndex;
+
+                    if (typeof(T).IsEnum)
+                        return value == Convert.ToInt32(comparerValue);
+
+                    return value != 0;
+                }
+
+                case SerializedPropertyType.ObjectReference:
+                {
+                    Object value = serializedProperty.objectReferenceValue;
+
+                    if (typeof(T) == typeof(Object) ||
+                        typeof(T).IsSubclassOf(typeof(Object)))
+                    {
+                        return value == (Object)(object)comparerValue;
+                    }
+
+                    return value != null;
+                }
+
+                case SerializedPropertyType.ManagedReference:
+                {
+                    return serializedProperty.managedReferenceValue != null;
+                }
+
+                case SerializedPropertyType.ArraySize:
+                {
+                    int value = serializedProperty.intValue;
+
+                    if (typeof(T) == typeof(int)) return value == Convert.ToInt32(comparerValue);
+
+                    return value > 0;
+                }
+
+                default:
+                    Debug.LogError($"SerializedProperty type '{serializedProperty.propertyType}' is not supported for comparison.", serializedProperty.serializedObject.targetObject);
+                    return false;
+            }
         }
-        
-        #endregion
-        
-        #region Reflection Access
+
+        /// <summary>
+        /// Evaluates a condition on a serialized object by checking for a boolean field or method
+        /// matching the specified condition name.
+        /// </summary>
+        /// <param name="serializedProperty">The serialized object containing the condition to evaluate.</param>
+        /// <param name="conditionName">The name of the field or method to check within the serialized object.</param>
+        /// <returns>True if the condition is valid and evaluates to true; otherwise, false.</returns>
+        public static bool CheckConditionFromSerializedProperty(SerializedProperty serializedProperty, string conditionName)
+        {
+            return CheckConditionFromSerializedProperty(serializedProperty, conditionName, new NullType());
+        }
         
         /// <summary>
         /// Evaluates a condition on a serialized object by checking for a boolean field or method matching the specified condition name.<br/>
         /// If the comparerValue type matches the 
         /// </summary>
-        /// <param name="serializedObject">The serialized object containing the condition to evaluate.</param>
+        /// <param name="serializedProperty">The serialized object containing the condition to evaluate.</param>
         /// <param name="conditionName">The name of the field or method to check within the serialized object.</param>
         /// <param name="comparerValue">The value to compare with the condition field if the type matches.</param>
         /// <returns>True if the condition is valid and evaluates to true; otherwise, false.</returns>
-        public static bool CheckConditionFromObject<T>(SerializedObject serializedObject, string conditionName, T comparerValue = default)
+        public static bool CheckConditionFromSerializedProperty<T>(SerializedProperty serializedProperty, string conditionName, T comparerValue = default)
         {
-            if (serializedObject == null || string.IsNullOrEmpty(conditionName)) return false;
+            if (serializedProperty == null || string.IsNullOrEmpty(conditionName)) return false;
             
-            var targetObject = serializedObject.targetObject;
+            var targetObject = serializedProperty.serializedObject.targetObject;
 
-            Type parentObjectType = targetObject.GetType();
-            
+            // Get the parent object type of the serializedProperty.
+            Type parentObjectType = GetParentObjectOfSerializedProperty(serializedProperty).GetType();
+
             // Try for method.
-            var method = parentObjectType.GetMethod(conditionName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
+            var method = parentObjectType.GetMethod(conditionName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
             if (method != null)
             {
                 // Check if it's a method that returns the same type as the comparerValue and has no parameters.
@@ -199,60 +339,54 @@ namespace AdriKat.Toolkit.Utility
                 {
                     return comparerValue.Equals((T)method.Invoke(targetObject, null));
                 }
-                
+
                 // Check if it's a bool method and has no parameters.
                 if (method.ReturnType == typeof(bool) && method.GetParameters().Length == 0)
                 {
                     return (bool)method.Invoke(targetObject, null);
                 }
-                Debug.LogError($"\"{conditionName}\" must return a boolean value and have no parameters!", serializedObject.targetObject);
+
+                Debug.LogError($"\"{conditionName}\" must return a boolean value and have no parameters!", targetObject);
                 return false;
             }
-            
+
             // Try for field.
-            var field = parentObjectType.GetField(conditionName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
+            var field = parentObjectType.GetField(conditionName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
             if (field != null)
             {
                 object fieldValue = field.GetValue(targetObject);
-                
+
                 if (field.FieldType == typeof(T))
                 {
                     return comparerValue.Equals((T)fieldValue);
                 }
+
                 if (field.FieldType == comparerValue.GetType())
                 {
                     return comparerValue.Equals(fieldValue);
                 }
+
                 if (field.FieldType == typeof(bool))
                 {
                     return (bool)fieldValue;
                 }
+
                 if (field.FieldType == typeof(string))
                 {
                     return string.IsNullOrEmpty((string)fieldValue);
                 }
+
                 if (field.FieldType.IsClass)
                 {
                     return fieldValue != null;
                 }
-                Debug.LogError($"\"{conditionName}\" is not a boolean field or a object field!", serializedObject.targetObject);
+
+                Debug.LogError($"\"{conditionName}\" is not a boolean field or a object field! Type is: {field.FieldType} and comparer type is {comparerValue.GetType()}", targetObject);
                 return false;
             }
 
-            Debug.LogError($"\"{conditionName}\" cannot be found or isn't supported!\nOnly bool fields, class fields, and parameterless methods returning a bool are supported.", serializedObject.targetObject);
+            Debug.LogError($"\"{conditionName}\" cannot be found or isn't supported!\nOnly bool fields, class fields, and parameterless methods returning a bool are supported.", targetObject);
             return false;
-        }
-        
-        /// <summary>
-        /// Evaluates a condition on a serialized object by checking for a boolean field or method
-        /// matching the specified condition name.
-        /// </summary>
-        /// <param name="serializedObject">The serialized object containing the condition to evaluate.</param>
-        /// <param name="conditionName">The name of the field or method to check within the serialized object.</param>
-        /// <returns>True if the condition is valid and evaluates to true; otherwise, false.</returns>
-        public static bool CheckConditionFromObject(SerializedObject serializedObject, string conditionName)
-        {
-            return CheckConditionFromObject(serializedObject, conditionName, new NullType());
         }
         
         /// <summary>
@@ -261,23 +395,23 @@ namespace AdriKat.Toolkit.Utility
         public static T RunMethodFromSerializedObject<T>(SerializedObject serializedObject, string functionName) where T : Object
         {
             if (serializedObject == null || functionName.IsNullOrEmpty()) return null;
-            
+
             var targetObject = serializedObject.targetObject;
             Type parentObjectType = targetObject.GetType();
-            
-            var method = parentObjectType.GetMethod(functionName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
+
+            var method = parentObjectType.GetMethod(functionName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
             if (method != null)
             {
                 return (T)method.Invoke(targetObject, null);
             }
-            
+
             Debug.LogError($"\"{functionName}\" cannot be found or isn't supported!\nOnly methods returning an object are supported.", serializedObject.targetObject);
-            
+
             return null;
         }
-        
+
         #endregion
-        
+
         /// <summary>
         /// Generates a unique identifier for a SerializedProperty based on its serialized object's instance ID and property path.
         /// </summary>
@@ -287,9 +421,9 @@ namespace AdriKat.Toolkit.Utility
         {
             return $"{property.serializedObject.targetObject.GetInstanceID()}_{property.propertyPath}";
         }
-        
+
         #region Animations
-        
+
         /// <summary>
         /// Retrieves the current "fade" value of a boolean animation associated with the specified key,
         /// creating or updating the animation if necessary.
@@ -316,21 +450,21 @@ namespace AdriKat.Toolkit.Utility
                         EditorWindow.focusedWindow.Repaint();
                     }
                 });
-                
+
                 _fadeAnimations[key] = fade;
             }
             else
             {
                 fade.target = targetState;
             }
-            
+
             return fade.faded;
         }
 
         #endregion
 
         #region Paths & Folders
-        
+
         /// <summary>
         /// Finds the file path of the script associated with a specific type.
         /// </summary>
@@ -354,7 +488,7 @@ namespace AdriKat.Toolkit.Utility
             Debug.LogWarning($"Script file for type {type.FullName} not found.");
             return null;
         }
-        
+
         /// <summary>
         /// Recursively creates all folders in the given path.
         /// </summary>
@@ -380,7 +514,7 @@ namespace AdriKat.Toolkit.Utility
                 }
             }
         }
-        
+
         #endregion
 
         private class NullType

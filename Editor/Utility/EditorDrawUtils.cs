@@ -309,6 +309,74 @@ namespace AdriKat.Toolkit.Utility
             GUI.enabled = previousState;
         }
         
+        public static bool DrawModuleHeader(Rect position, GUIContent label, ref bool enabled, ref bool foldoutState, bool showFoldoutArrow = true, Color? background = null)
+        {
+            if (background != null) EditorGUI.DrawRect(position, background.Value);
+
+            const float padding = 4f;
+            const float toggleWidth = 18f;
+            const float arrowWidth = 12f;
+
+            Rect toggleRect = new Rect(
+                position.x + padding,
+                position.y,
+                toggleWidth,
+                position.height
+            );
+
+            float currentX = toggleRect.xMax + padding;
+            
+            // Optional foldout arrow
+            if (showFoldoutArrow)
+            {
+                Rect arrowRect = new Rect(
+                    currentX,
+                    position.y,
+                    arrowWidth,
+                    position.height
+                );
+
+                foldoutState = EditorGUI.Foldout(
+                    arrowRect,
+                    foldoutState,
+                    GUIContent.none,
+                    true
+                );
+
+                currentX += arrowWidth;
+            }
+            
+            // Label
+            Rect labelRect = new Rect(
+                currentX,
+                position.y,
+                position.width - (currentX - position.x),
+                position.height
+            );
+
+            // Toggle
+            enabled = EditorGUI.Toggle(
+                toggleRect,
+                enabled
+            );
+            
+            GUIStyle style = new GUIStyle(EditorStyles.boldLabel)
+            {
+                alignment = TextAnchor.MiddleLeft
+            };
+
+            EditorGUI.LabelField(labelRect, label, style);
+            
+            // Make clicking the title toggle foldout
+            if (Event.current.type == EventType.MouseDown && labelRect.Contains(Event.current.mousePosition))
+            {
+                foldoutState = !foldoutState;
+                Event.current.Use();
+            }
+
+            return foldoutState;
+        }
+        
         #endregion
         
         #region Height Calculation

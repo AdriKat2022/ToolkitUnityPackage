@@ -19,7 +19,7 @@ namespace AdriKat.Toolkit.Attributes
             
             string variableName = showIfAttribute.VariableName;
 
-            bool shouldShow = ComputeCondition(property.serializedObject, variableName, showIfAttribute);
+            bool shouldShow = ComputeConditionOfRelativeProperty(property, variableName, showIfAttribute);
             
             float faded = EditorUtils.GetBoolAnimationFade(property.GetUniqueIDFromProperty(), shouldShow, 2f);
             
@@ -34,7 +34,7 @@ namespace AdriKat.Toolkit.Attributes
             ShowIfAttribute showIfAttribute = (ShowIfAttribute)attribute;
             string variableName = showIfAttribute.VariableName;
 
-            bool shouldShow = ComputeCondition(property.serializedObject, variableName, showIfAttribute);
+            bool shouldShow = ComputeConditionOfRelativeProperty(property, variableName, showIfAttribute);
 
             if (showIfAttribute.ShowDisabledField)
             {
@@ -48,38 +48,38 @@ namespace AdriKat.Toolkit.Attributes
             }
         }
 
-        private static bool ComputeCondition(SerializedObject serializedObject, string variableName, ShowIfAttribute showIfAttribute)
+        private static bool ComputeConditionOfRelativeProperty(SerializedProperty property, string variableName, ShowIfAttribute showIfAttribute)
         {
+            SerializedProperty propertyToCompare = property.FindRelativeProperty(variableName);
+            
             bool shouldShow;
 
-            if (showIfAttribute.NeedsComparison)
+            if (showIfAttribute.ComparerValue != null)
             {
-                object valueToCompare = serializedObject.GetPropertyValue(variableName);
-                object otherValue = showIfAttribute.ComparerValue;
+                object comparerValue = showIfAttribute.ComparerValue;
                 
                 if (showIfAttribute.ComparerValueIsVariableName)
                 {
-                    otherValue = serializedObject.GetPropertyValue((string)otherValue);
-                }
-                
-                if (valueToCompare.GetType() != otherValue.GetType())
-                {
-                    throw new InvalidOperationException($"{valueToCompare.GetType()} and {otherValue.GetType()} are not the same type and cannot be compared.");
+                    comparerValue = propertyToCompare.FindRelativeProperty((string)comparerValue)?.boxedValue;
+                    if (comparerValue == null)
+                    {
+                        Debug.LogError($"ShowIfAttribute: Could not find property '{showIfAttribute.ComparerValue}' to compare with '{variableName}' for property '{property.name}'.");
+                    }
                 }
                 
                 // We need to get the type right before calling the CheckCondition function, so the switch statement is needed.
-                shouldShow = otherValue switch
+                shouldShow = comparerValue switch
                 {
-                    string stringValue => EditorUtils.CheckConditionFromObject(serializedObject, variableName, stringValue),
-                    bool boolValue => EditorUtils.CheckConditionFromObject(serializedObject, variableName, boolValue),
-                    int intValue => EditorUtils.CheckConditionFromObject(serializedObject, variableName, intValue),
-                    Enum enumValue => EditorUtils.CheckConditionFromObject(serializedObject, variableName, enumValue),
-                    _ => EditorUtils.CheckConditionFromObject(serializedObject, variableName, otherValue)
+                    string stringValue => EditorUtils.CompareSerializedProperty(propertyToCompare, stringValue),
+                    bool boolValue => EditorUtils.CompareSerializedProperty(propertyToCompare, boolValue),
+                    int intValue => EditorUtils.CompareSerializedProperty(propertyToCompare, intValue),
+                    Enum enumValue => EditorUtils.CompareSerializedProperty(propertyToCompare, enumValue),
+                    _ => throw new InvalidOperationException($"Type {comparerValue?.GetType()} is not supported for comparison in ShowIfAttribute.")
                 };
             }
             else
             {
-                shouldShow = EditorUtils.CheckConditionFromObject(serializedObject, variableName);
+                shouldShow = EditorUtils.CompareSerializedProperty(propertyToCompare, true);
             }
             
             if (showIfAttribute.Invert)

@@ -1,59 +1,75 @@
+using System;
+using AdriKat.Toolkit.Attributes;
+using AdriKat.Toolkit.DesignPatterns;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
 namespace AdriKat.Toolkit.Animations
 {
-    public class ButtonAnimation : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    public class ButtonAnimation : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
     {
         [Header("Time")]
-        [Tooltip("Whether is will use the Time.unscaledDeltaTime instead of the regular Time.deltaTime. Useful for pause menus that must function when the time scale is 0.")]
-        [SerializeField] private bool useUnscaledDeltaTime = false;
-        [SerializeField] private bool activateOnAwake = true;
-        private bool isActive;
-
-        [Header("Wave Rotation")]
-        [SerializeField] private bool enableRotation = false;
-        [Tooltip("In degree")]
-        [SerializeField] private float rotationAmplitude = 30f;
-        [Tooltip("In loops per second")]
-        [SerializeField] private float rotationSpeed = 1;
+        [Tooltip("Whether is will use the Time.unscaledDeltaTime instead of the regular Time.deltaTime. Useful for pause menus that must function when the timescale is 0.")]
+        public bool useUnscaledDeltaTime;
+        public bool activateOnAwake = true;
+        
+        [Header("Settings")]
+        public WaveRotationSettings waveRotationSettings;
         private float _time;
 
-        [Header("Growth on hover")]
-        [SerializeField] private bool enableHoverScale = false;
-        [SerializeField] private float addedScale = 0.2f;
-        [SerializeField] private float hoverSpeed = 15f;
-        private Vector3 scaleOnHover;
+        [Space]
+        public HoverScaleSettings hoverScaleSettings;
+        private float _scaleProgress;
+        private Vector3 _scaleOnHover;
+        private Vector3 _startScale;
+        private Vector3 _targetScale;
+        private AnimationCurve _currentCurve;
+        private float _currentDuration;
+        private bool _isMouseOver;
 
-        [Header("Click animation")]
-        [SerializeField] private bool enableClickAnimation = false;
-        [SerializeField] private float clickScaleDepth = 0.2f;
-        [SerializeField] private float clickSpeed = 15f;
-        private Vector3 scaleOnClick;
+        [Space]
+        public ClickAnimationSettings clickAnimationSettings;
+        private Vector3 _scaleOnClick;
+        private bool _isMouseClicked;
 
         [Header("Sound")]
-        [SerializeField] private bool playSoundOnHover;
-        [SerializeField] private AudioClip soundOnHover;
-        [SerializeField] private bool playSoundOnClick;
-        [SerializeField] private AudioClip soundOnClick;
-        [Space]
-        [SerializeField] private bool onUpClickInstead = false;
-        [Tooltip("Will not trigger the click sound but lets another script trigger the function PlayButtonClickSound")]
-        [SerializeField] private bool doNotTriggerAutomatically = false;
+        public bool playSoundOnHover;
+        [ShowIf(nameof(playSoundOnHover))] public AudioClip soundOnHover;
+        public bool playSoundOnClick;
+        [ShowIf(nameof(playSoundOnClick))] public AudioClip soundOnClick;
+        [ShowIf(nameof(playSoundOnClick))] public bool onUpClickInstead;
 
-        private bool isMouseOver;
+        [Header("Events")]
+        public bool fireEvents;
+        [ShowIf(nameof(fireEvents))] public UnityEvent onHover;
+        [ShowIf(nameof(fireEvents))] public UnityEvent onClickDown;
+        [ShowIf(nameof(fireEvents))] public UnityEvent onClickUp;
 
+        // For custom selection
+        public void ToggleClick(bool isClicked)
+        {
+            _isMouseClicked = isClicked;
+        }
+        
+        public void Select()
+        {
+            _isMouseOver = true;
+        }
+
+        public void Deselect()
+        {
+            _isMouseOver = false;
+        }   
+        
 #if UNITY_EDITOR
 
         private void OnValidate()
         {
-            scaleOnHover = Vector3.one * (1 + addedScale);
-            scaleOnClick = Vector3.one * (1 - clickScaleDepth);
+            UpdateVectorScales();
         }
-
 #endif
-
-
+        
         private void OnEnable()
         {
             _time = 0;
@@ -61,92 +77,151 @@ namespace AdriKat.Toolkit.Animations
 
         private void Awake()
         {
-            isActive = activateOnAwake;
-
             transform.localScale = Vector3.one;
-            scaleOnHover = Vector3.one * (1 + addedScale);
-            scaleOnClick = Vector3.one * (1 - clickScaleDepth);
+            UpdateVectorScales();
             _time = 0;
 
-            isMouseOver = false;
-        }
-
-        public void PlayButtonClickSound()
-        {
-            //AudioManager.Instance.PlaySoundEffect(soundOnClick);
-        }
-        public void PlayButtonHoverSound()
-        {
-            //AudioManager.Instance.PlaySoundEffect(soundOnHover);
+            _isMouseOver = false;
         }
 
         private void Update()
         {
-            if (!isActive) return;
-
             float deltaTime = useUnscaledDeltaTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-            if (enableRotation)
-            {
-                HandleWaveMotion();
-            }
-
-            if (enableHoverScale)
-            {
-                HandleGrowthOnHover(deltaTime);
-            }
-
-
-            if (playSoundOnClick
-                && isMouseOver
-                && !doNotTriggerAutomatically
-                && (
-                    Input.GetMouseButtonUp(0) && onUpClickInstead
-                    || Input.GetMouseButtonDown(0) && !onUpClickInstead
-                    ))
-            {
-
-                PlayButtonClickSound();
-            }
-
-
+            if (waveRotationSettings.enabled) HandleWaveMotion();
+            if (hoverScaleSettings.enabled) HandleGrowth(deltaTime);
+            
             _time += deltaTime;
         }
 
-        private void HandleGrowthOnHover(float dTime)
+        private void HandleGrowth(float deltaTime)
         {
-            if (isMouseOver)
+            Vector3 desiredScale = Vector3.one;
+            AnimationCurve desiredCurve = hoverScaleSettings.curve;
+            float desiredDuration = hoverScaleSettings.duration;
+
+            if (_isMouseOver)
             {
-                if (enableClickAnimation && Input.GetMouseButton(0))
-                    transform.localScale = Vector3.Lerp(transform.localScale, scaleOnClick, dTime * clickSpeed);
+                if (clickAnimationSettings.enabled && _isMouseClicked)
+                {
+                    desiredScale = _scaleOnClick;
+                    desiredCurve = clickAnimationSettings.curve;
+                    desiredDuration = clickAnimationSettings.duration;
+                }
                 else
-                    transform.localScale = Vector3.Lerp(transform.localScale, scaleOnHover, dTime * hoverSpeed);
+                {
+                    desiredScale = _scaleOnHover;
+                }
             }
-            else
+
+            // Target changed -> restart animation
+            if (desiredScale != _targetScale)
             {
-                transform.localScale = Vector3.Lerp(transform.localScale, Vector3.one, dTime * hoverSpeed);
+                _startScale = transform.localScale;
+                _targetScale = desiredScale;
+                _scaleProgress = 0f;
             }
+
+            _scaleProgress += deltaTime / desiredDuration;
+    
+            float curveValue = desiredCurve.Evaluate(Mathf.Clamp01(_scaleProgress));
+
+            transform.localScale = Vector3.LerpUnclamped(
+                _startScale,
+                _targetScale,
+                curveValue
+            );
         }
 
         private void HandleWaveMotion()
         {
-            float rotationAngle = Mathf.Sin(_time * rotationSpeed * Mathf.PI * 2) * rotationAmplitude;
+            if (waveRotationSettings.duration == 0) return;
+            
+            float rotationAngle;
+            
+            if (waveRotationSettings.animationType == WaveRotationSettings.AnimationType.Custom)
+            {
+                var t = _time / waveRotationSettings.duration;
+                float curveTime = waveRotationSettings.pingPong ? Mathf.PingPong(t, 1) : t % 1;
+                float lerpAmount = waveRotationSettings.curve.Evaluate(curveTime);
+                rotationAngle = lerpAmount * waveRotationSettings.amplitude;
+            }
+            else
+            {
+                rotationAngle = Mathf.Sin(_time / waveRotationSettings.duration * Mathf.PI * 2) * waveRotationSettings.amplitude;
+            }
+            
             transform.rotation = Quaternion.Euler(0f, 0f, rotationAngle);
         }
 
         public void OnPointerEnter(PointerEventData eventData)
         {
+            if (fireEvents) onHover.Invoke();
+            
             if (playSoundOnHover)
             {
-                PlayButtonHoverSound();
+                AudioSource.PlayClipAtPoint(soundOnHover, Camera.main.transform.position);
             }
 
-            isMouseOver = true;
+            _isMouseOver = true;
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            isMouseOver = false;
+            _isMouseOver = false;
+        }
+
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            if (fireEvents) onClickDown.Invoke();
+            _isMouseClicked = true;
+        }
+
+        public void OnPointerUp(PointerEventData eventData)
+        {
+            if (fireEvents) onClickUp.Invoke();
+            _isMouseClicked = false;
+        }
+        
+        private void UpdateVectorScales()
+        {
+            _scaleOnHover = Vector3.one * (1 + hoverScaleSettings.addedScale);
+            _scaleOnClick = Vector3.one * (1 - clickAnimationSettings.clickScaleDepth);
+        }
+        
+        [Serializable]
+        public class WaveRotationSettings : ModuleType
+        {
+            public float amplitude = 30f;
+            public float duration = 0.5f;
+            public AnimationType animationType = AnimationType.Sin;
+            [ShowIf(nameof(animationType), AnimationType.Custom, false)]
+            public AnimationCurve curve = AnimationCurve.EaseInOut(0,0,1,1);
+            [ShowIf(nameof(animationType), AnimationType.Custom, false)]
+            public bool pingPong = true;
+
+            public enum AnimationType
+            {
+                Sin,
+                Custom
+            }
+        }
+
+        [Serializable]
+        public class HoverScaleSettings : ModuleType
+        {
+            public float addedScale = 0.2f;
+            public float duration = 0.5f;
+            public AnimationCurve curve = AnimationCurve.EaseInOut(0,0,1,1);
+        }
+
+        [Serializable]
+        public class ClickAnimationSettings : ModuleType
+        {
+            public float clickScaleDepth = 0.2f;
+            public float duration = 0.5f;
+            public AnimationCurve curve = AnimationCurve.EaseInOut(0,0,1,1);
         }
     }
+    
 }
