@@ -210,7 +210,7 @@ namespace AdriKat.Toolkit.Utility
         /// <param name="serializedProperty">The serialized property to compare.</param>
         /// <param name="comparerValue">The value to compare with. If omitted, the property is checked for truthiness.</param>
         /// <returns>True if the property matches the condition; otherwise false.</returns>
-        public static bool CompareSerializedProperty<T>(SerializedProperty serializedProperty, T comparerValue)
+        public static bool CompareSerializedProperty(SerializedProperty serializedProperty, object comparerValue)
         {
             if (serializedProperty == null) return false;
 
@@ -220,8 +220,7 @@ namespace AdriKat.Toolkit.Utility
                 {
                     bool value = serializedProperty.boolValue;
 
-                    if (typeof(T) == typeof(bool))
-                        return value == (bool)(object)comparerValue;
+                    if (comparerValue is bool boolean) return value == boolean;
 
                     return value;
                 }
@@ -230,8 +229,7 @@ namespace AdriKat.Toolkit.Utility
                 {
                     string value = serializedProperty.stringValue;
 
-                    if (typeof(T) == typeof(string))
-                        return value == (string)(object)comparerValue;
+                    if (comparerValue is string str) return value == str;
 
                     return !string.IsNullOrEmpty(value);
                 }
@@ -240,10 +238,9 @@ namespace AdriKat.Toolkit.Utility
                 {
                     long value = serializedProperty.longValue;
 
-                    if (typeof(T).IsEnum ||
-                        typeof(T) == typeof(int) ||
-                        typeof(T) == typeof(long))
-                        return value == Convert.ToInt64(comparerValue);
+                    if (comparerValue is int intValue) return value == intValue;
+                    if (comparerValue is long longValue) return value == longValue;
+                    if (comparerValue is Enum enumValue) return value == Convert.ToInt64(enumValue);
 
                     return value != 0;
                 }
@@ -252,8 +249,7 @@ namespace AdriKat.Toolkit.Utility
                 {
                     float value = serializedProperty.floatValue;
 
-                    if (typeof(T) == typeof(float))
-                        return Mathf.Approximately(value, Convert.ToSingle(comparerValue));
+                    if (comparerValue is float floatValue) return Mathf.Approximately(value, floatValue);
 
                     return !Mathf.Approximately(value, 0f);
                 }
@@ -262,8 +258,12 @@ namespace AdriKat.Toolkit.Utility
                 {
                     int value = serializedProperty.enumValueIndex;
 
-                    if (typeof(T).IsEnum)
-                        return value == Convert.ToInt32(comparerValue);
+                    // Debug.Log($"{typeof(T)} IsEnum: {typeof(T).IsEnum}, IsAssignable: {serializedProperty.enumValueIndex is T}");
+                    
+                    if (comparerValue is Enum enumValue)
+                    {
+                        return value == Convert.ToInt32(enumValue);
+                    }
 
                     return value != 0;
                 }
@@ -272,10 +272,9 @@ namespace AdriKat.Toolkit.Utility
                 {
                     Object value = serializedProperty.objectReferenceValue;
 
-                    if (typeof(T) == typeof(Object) ||
-                        typeof(T).IsSubclassOf(typeof(Object)))
+                    if (comparerValue is Object obj)
                     {
-                        return value == (Object)(object)comparerValue;
+                        return value == obj;
                     }
 
                     return value != null;
@@ -290,17 +289,27 @@ namespace AdriKat.Toolkit.Utility
                 {
                     int value = serializedProperty.intValue;
 
-                    if (typeof(T) == typeof(int)) return value == Convert.ToInt32(comparerValue);
+                    if (comparerValue is int intValue) return value == intValue;
 
                     return value > 0;
                 }
 
+                case SerializedPropertyType.Generic:
+                {
+                    // For generic types, we can check if it's a class and if the comparerValue is null or not.
+                    object value = serializedProperty.boxedValue;
+
+                    if (comparerValue == null) return value != null;
+
+                    return value != null && value.Equals(comparerValue);
+                }
+                
                 default:
                     Debug.LogError($"SerializedProperty type '{serializedProperty.propertyType}' is not supported for comparison.", serializedProperty.serializedObject.targetObject);
                     return false;
             }
         }
-
+        
         /// <summary>
         /// Evaluates a condition on a serialized object by checking for a boolean field or method
         /// matching the specified condition name.
@@ -392,20 +401,41 @@ namespace AdriKat.Toolkit.Utility
         /// <summary>
         /// Runs the function of the given name on the given serializedObject.
         /// </summary>
-        public static T RunMethodFromSerializedObject<T>(SerializedObject serializedObject, string functionName) where T : Object
+        public static object RunMethodRelativeToProperty(SerializedProperty serializedProperty, string functionName)
         {
-            if (serializedObject == null || functionName.IsNullOrEmpty()) return null;
+            if (serializedProperty == null || functionName.IsNullOrEmpty()) return null;
 
-            var targetObject = serializedObject.targetObject;
-            Type parentObjectType = targetObject.GetType();
+            var targetObject = serializedProperty.serializedObject.targetObject;
+            Type parentObjectType = GetParentObjectOfSerializedProperty(serializedProperty).GetType();
 
             var method = parentObjectType.GetMethod(functionName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
             if (method != null)
             {
-                return (T)method.Invoke(targetObject, null);
+                return method.Invoke(targetObject, null);
             }
 
-            Debug.LogError($"\"{functionName}\" cannot be found or isn't supported!\nOnly methods returning an object are supported.", serializedObject.targetObject);
+            Debug.LogError($"\"{functionName}\" cannot be found or isn't supported!\nOnly methods returning an object are supported.", serializedProperty.serializedObject.targetObject);
+
+            return null;
+        }
+                
+        /// <summary>
+        /// Runs the function of the given name on the given serializedObject.
+        /// </summary>
+        public static object RunMethodFromSerializedObject(SerializedProperty serializedProperty, string functionName)
+        {
+            if (serializedProperty == null || functionName.IsNullOrEmpty()) return null;
+
+            var targetObject = serializedProperty.serializedObject.targetObject;
+            Type parentObjectType = GetParentObjectOfSerializedProperty(serializedProperty).GetType();
+
+            var method = parentObjectType.GetMethod(functionName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            if (method != null)
+            {
+                return method.Invoke(targetObject, null);
+            }
+
+            Debug.LogError($"\"{functionName}\" cannot be found or isn't supported!\nOnly methods returning an object are supported.", serializedProperty.serializedObject.targetObject);
 
             return null;
         }

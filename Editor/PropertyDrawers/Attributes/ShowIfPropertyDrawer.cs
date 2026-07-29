@@ -17,9 +17,7 @@ namespace AdriKat.Toolkit.Attributes
                 return EditorGUI.GetPropertyHeight(property, label, true);
             }
             
-            string variableName = showIfAttribute.VariableName;
-
-            bool shouldShow = ComputeConditionOfRelativeProperty(property, variableName, showIfAttribute);
+            bool shouldShow = ComputeConditionOfRelativeProperty(property, showIfAttribute);
             
             float faded = EditorUtils.GetBoolAnimationFade(property.GetUniqueIDFromProperty(), shouldShow, 2f);
             
@@ -32,9 +30,8 @@ namespace AdriKat.Toolkit.Attributes
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             ShowIfAttribute showIfAttribute = (ShowIfAttribute)attribute;
-            string variableName = showIfAttribute.VariableName;
 
-            bool shouldShow = ComputeConditionOfRelativeProperty(property, variableName, showIfAttribute);
+            bool shouldShow = ComputeConditionOfRelativeProperty(property, showIfAttribute);
 
             if (showIfAttribute.ShowDisabledField)
             {
@@ -48,34 +45,43 @@ namespace AdriKat.Toolkit.Attributes
             }
         }
 
-        private static bool ComputeConditionOfRelativeProperty(SerializedProperty property, string variableName, ShowIfAttribute showIfAttribute)
+        private static bool ComputeConditionOfRelativeProperty(SerializedProperty property, ShowIfAttribute showIfAttribute)
         {
+            var variableName = showIfAttribute.VariableName;
             SerializedProperty propertyToCompare = property.FindRelativeProperty(variableName);
             
             bool shouldShow;
 
+            if (propertyToCompare == null)
+            {
+                // The property doesn't exist and it might be a function.
+                object result = EditorUtils.RunMethodRelativeToProperty(property, variableName);
+
+                if (result is bool boolValue)
+                {
+                    return boolValue;
+                }
+                else
+                {
+                    Debug.LogError($"ShowIfAttribute: Methods returning a non-bool result are not supported.");
+                    return false;
+                }
+            }
+            
             if (showIfAttribute.ComparerValue != null)
             {
                 object comparerValue = showIfAttribute.ComparerValue;
                 
                 if (showIfAttribute.ComparerValueIsVariableName)
                 {
-                    comparerValue = propertyToCompare.FindRelativeProperty((string)comparerValue)?.boxedValue;
+                    comparerValue = property.FindRelativeProperty((string)comparerValue)?.boxedValue;
                     if (comparerValue == null)
                     {
                         Debug.LogError($"ShowIfAttribute: Could not find property '{showIfAttribute.ComparerValue}' to compare with '{variableName}' for property '{property.name}'.");
                     }
                 }
                 
-                // We need to get the type right before calling the CheckCondition function, so the switch statement is needed.
-                shouldShow = comparerValue switch
-                {
-                    string stringValue => EditorUtils.CompareSerializedProperty(propertyToCompare, stringValue),
-                    bool boolValue => EditorUtils.CompareSerializedProperty(propertyToCompare, boolValue),
-                    int intValue => EditorUtils.CompareSerializedProperty(propertyToCompare, intValue),
-                    Enum enumValue => EditorUtils.CompareSerializedProperty(propertyToCompare, enumValue),
-                    _ => throw new InvalidOperationException($"Type {comparerValue?.GetType()} is not supported for comparison in ShowIfAttribute.")
-                };
+                shouldShow = EditorUtils.CompareSerializedProperty(propertyToCompare, comparerValue);
             }
             else
             {
