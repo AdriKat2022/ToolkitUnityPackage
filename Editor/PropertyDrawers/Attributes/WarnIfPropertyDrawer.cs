@@ -13,14 +13,15 @@ namespace AdriKat.Toolkit.Attributes
         
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            WarnIfAttribute warnIfAttribute = ((WarnIfAttribute)attribute);
+            WarnIfAttribute warnIfAttribute = (WarnIfAttribute)attribute;
             
             float boxStylingYPadding = warnIfAttribute.BoxStyling.yPadding;
             
             float fieldHeight = base.GetPropertyHeight(property, label) + EditorGUIUtility.standardVerticalSpacing;
             
             _helpBoxPreferredHeight = GetHelpBoxHeight(warnIfAttribute.WarningMessage, EditorGUIUtility.currentViewWidth - warnIfAttribute.BoxStyling.xPadding) + warnIfAttribute.BoxStyling.additionalBoxHeight;
-            _currentCondition = EditorUtils.CheckConditionFromSerializedProperty(property, warnIfAttribute.ConditionName) ^ warnIfAttribute.Invert;
+            bool propertyCondition = EditorUtils.ResolveCondition(property, warnIfAttribute.ConditionName);
+            _currentCondition = propertyCondition ^ warnIfAttribute.Invert;
             _helpBoxCurrentFade = EditorUtils.GetBoolAnimationFade(property.GetUniqueIDFromProperty(), _currentCondition, 2f);
             
             float finalHeight = _helpBoxCurrentFade * (_helpBoxPreferredHeight + boxStylingYPadding) + fieldHeight;

@@ -26,7 +26,7 @@ namespace AdriKat.Toolkit.Attributes
                 property,
                 label,
                 displayClassAttribute.actionName,
-                () => (Object)EditorUtils.RunMethodFromSerializedObject(property, displayClassAttribute.functionActionName),
+                () => (Object)EditorUtils.RunMethodRelativeToProperty(property, displayClassAttribute.functionActionName),
                 ref folded);
             
             EditorPrefs.SetBool(foldoutKey, folded);

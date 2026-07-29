@@ -54,18 +54,21 @@ namespace AdriKat.Toolkit.Attributes
 
             if (propertyToCompare == null)
             {
-                // The property doesn't exist and it might be a function.
-                object result = EditorUtils.RunMethodRelativeToProperty(property, variableName);
+                // The property doesn't exist, but might be a function.
+                if (!EditorUtils.TryRunMethodRelativeToProperty(property, variableName, out object result))
+                {
+                    Debug.LogError($"ShowIfAttribute: Failed to find property or function '{variableName}'.");
+                    return false;
+                }
 
+                // Was a method.
                 if (result is bool boolValue)
                 {
                     return boolValue;
                 }
-                else
-                {
-                    Debug.LogError($"ShowIfAttribute: Methods returning a non-bool result are not supported.");
-                    return false;
-                }
+
+                Debug.LogError($"ShowIfAttribute: Methods returning a non-bool result are not supported.");
+                return false;
             }
             
             if (showIfAttribute.ComparerValue != null)

@@ -202,6 +202,60 @@ namespace AdriKat.Toolkit.Utility
         #endregion
 
         #region Reflection Access
+
+        /// <summary>
+        /// Evaluates a condition on a serialized object by checking for a boolean field or method
+        /// matching the specified condition name. If a comparer value is provided, it will compare the field's value to the comparer value.
+        /// </summary>
+        /// <param name="property">The serialized property where the condition to evaluate lives in the same level.</param>
+        /// <param name="conditionName">The name of the field or method to check.</param>
+        /// <param name="comparerValue"></param>
+        /// <param name="comparerValueIsVariableName"></param>
+        /// <returns>True if the condition is valid and evaluates to true; otherwise, false.</returns>
+        public static bool ResolveCondition(SerializedProperty property, string conditionName, object comparerValue = null, bool comparerValueIsVariableName = false)
+        {
+            var variableName = conditionName;
+            SerializedProperty propertyToCompare = property.FindRelativeProperty(variableName);
+            
+            if (propertyToCompare == null)
+            {
+                // The property doesn't exist, but might be a function.
+                if (!TryRunMethodRelativeToProperty(property, variableName, out object result))
+                {
+                    Debug.LogError($"ShowIfAttribute: Failed to find property or function '{variableName}'.");
+                    return false;
+                }
+
+                // Not a function.
+                if (result is not bool boolValue)
+                {
+                    Debug.LogError($"ShowIfAttribute: Methods returning a non-bool result are not supported.");
+                    return false;
+                }
+
+                // Was a method.
+                return boolValue;
+            }
+
+            if (comparerValue == null)
+            {
+                // Nothing to compare to, by default compare with "true".
+                return CompareSerializedProperty(propertyToCompare, true);
+            }
+
+            if (comparerValueIsVariableName)
+            {
+                string variableNameValue = (string)comparerValue;
+                comparerValue = property.FindRelativeProperty((string)comparerValue)?.boxedValue;
+                if (comparerValue == null)
+                {
+                    Debug.LogError($"ShowIfAttribute: Could not find property '{variableNameValue}' to compare with '{variableName}' for property '{property.name}'.");
+                    return false;
+                }
+            }
+                
+            return CompareSerializedProperty(propertyToCompare, comparerValue);
+        }
         
         /// <summary>
         /// Evaluates a condition on a serialized property by checking its value.
@@ -311,134 +365,37 @@ namespace AdriKat.Toolkit.Utility
         }
         
         /// <summary>
-        /// Evaluates a condition on a serialized object by checking for a boolean field or method
-        /// matching the specified condition name.
-        /// </summary>
-        /// <param name="serializedProperty">The serialized object containing the condition to evaluate.</param>
-        /// <param name="conditionName">The name of the field or method to check within the serialized object.</param>
-        /// <returns>True if the condition is valid and evaluates to true; otherwise, false.</returns>
-        public static bool CheckConditionFromSerializedProperty(SerializedProperty serializedProperty, string conditionName)
-        {
-            return CheckConditionFromSerializedProperty(serializedProperty, conditionName, new NullType());
-        }
-        
-        /// <summary>
-        /// Evaluates a condition on a serialized object by checking for a boolean field or method matching the specified condition name.<br/>
-        /// If the comparerValue type matches the 
-        /// </summary>
-        /// <param name="serializedProperty">The serialized object containing the condition to evaluate.</param>
-        /// <param name="conditionName">The name of the field or method to check within the serialized object.</param>
-        /// <param name="comparerValue">The value to compare with the condition field if the type matches.</param>
-        /// <returns>True if the condition is valid and evaluates to true; otherwise, false.</returns>
-        public static bool CheckConditionFromSerializedProperty<T>(SerializedProperty serializedProperty, string conditionName, T comparerValue = default)
-        {
-            if (serializedProperty == null || string.IsNullOrEmpty(conditionName)) return false;
-            
-            var targetObject = serializedProperty.serializedObject.targetObject;
-
-            // Get the parent object type of the serializedProperty.
-            Type parentObjectType = GetParentObjectOfSerializedProperty(serializedProperty).GetType();
-
-            // Try for method.
-            var method = parentObjectType.GetMethod(conditionName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            if (method != null)
-            {
-                // Check if it's a method that returns the same type as the comparerValue and has no parameters.
-                if (method.ReturnType == typeof(T) && method.GetParameters().Length == 0)
-                {
-                    return comparerValue.Equals((T)method.Invoke(targetObject, null));
-                }
-
-                // Check if it's a bool method and has no parameters.
-                if (method.ReturnType == typeof(bool) && method.GetParameters().Length == 0)
-                {
-                    return (bool)method.Invoke(targetObject, null);
-                }
-
-                Debug.LogError($"\"{conditionName}\" must return a boolean value and have no parameters!", targetObject);
-                return false;
-            }
-
-            // Try for field.
-            var field = parentObjectType.GetField(conditionName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            if (field != null)
-            {
-                object fieldValue = field.GetValue(targetObject);
-
-                if (field.FieldType == typeof(T))
-                {
-                    return comparerValue.Equals((T)fieldValue);
-                }
-
-                if (field.FieldType == comparerValue.GetType())
-                {
-                    return comparerValue.Equals(fieldValue);
-                }
-
-                if (field.FieldType == typeof(bool))
-                {
-                    return (bool)fieldValue;
-                }
-
-                if (field.FieldType == typeof(string))
-                {
-                    return string.IsNullOrEmpty((string)fieldValue);
-                }
-
-                if (field.FieldType.IsClass)
-                {
-                    return fieldValue != null;
-                }
-
-                Debug.LogError($"\"{conditionName}\" is not a boolean field or a object field! Type is: {field.FieldType} and comparer type is {comparerValue.GetType()}", targetObject);
-                return false;
-            }
-
-            Debug.LogError($"\"{conditionName}\" cannot be found or isn't supported!\nOnly bool fields, class fields, and parameterless methods returning a bool are supported.", targetObject);
-            return false;
-        }
-        
-        /// <summary>
         /// Runs the function of the given name on the given serializedObject.
         /// </summary>
         public static object RunMethodRelativeToProperty(SerializedProperty serializedProperty, string functionName)
         {
-            if (serializedProperty == null || functionName.IsNullOrEmpty()) return null;
-
-            var targetObject = serializedProperty.serializedObject.targetObject;
-            Type parentObjectType = GetParentObjectOfSerializedProperty(serializedProperty).GetType();
-
-            var method = parentObjectType.GetMethod(functionName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            if (method != null)
-            {
-                return method.Invoke(targetObject, null);
-            }
-
-            Debug.LogError($"\"{functionName}\" cannot be found or isn't supported!\nOnly methods returning an object are supported.", serializedProperty.serializedObject.targetObject);
-
-            return null;
+            TryRunMethodRelativeToProperty(serializedProperty, functionName, out object result);
+            return result;
         }
-                
+        
         /// <summary>
         /// Runs the function of the given name on the given serializedObject.
         /// </summary>
-        public static object RunMethodFromSerializedObject(SerializedProperty serializedProperty, string functionName)
-        {
-            if (serializedProperty == null || functionName.IsNullOrEmpty()) return null;
-
-            var targetObject = serializedProperty.serializedObject.targetObject;
-            Type parentObjectType = GetParentObjectOfSerializedProperty(serializedProperty).GetType();
-
-            var method = parentObjectType.GetMethod(functionName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            if (method != null)
+        public static bool TryRunMethodRelativeToProperty(SerializedProperty serializedProperty, string functionName, out object result)
             {
-                return method.Invoke(targetObject, null);
+                result = null;
+                
+                if (serializedProperty == null || functionName.IsNullOrEmpty()) return false;
+                
+                var targetObject = serializedProperty.serializedObject.targetObject;
+                Type parentObjectType = GetParentObjectOfSerializedProperty(serializedProperty).GetType();
+
+                var method = parentObjectType.GetMethod(functionName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                if (method != null)
+                {
+                    result = method.Invoke(targetObject, null);
+                    return true;
+                }
+
+                Debug.LogError($"\"{functionName}\" cannot be found or isn't supported!\nOnly methods returning an object are supported.", serializedProperty.serializedObject.targetObject);
+
+                return false;
             }
-
-            Debug.LogError($"\"{functionName}\" cannot be found or isn't supported!\nOnly methods returning an object are supported.", serializedProperty.serializedObject.targetObject);
-
-            return null;
-        }
 
         #endregion
 
