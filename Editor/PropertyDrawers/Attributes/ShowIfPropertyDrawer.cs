@@ -1,13 +1,98 @@
-using System;
+using System.Collections.Generic;
 using AdriKat.Toolkit.Utility;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace AdriKat.Toolkit.Attributes
 {
     [CustomPropertyDrawer(typeof(ShowIfAttribute))]
     public class ShowIfPropertyDrawer : PropertyDrawer
     {
+        #region UI Toolkit
+        
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
+            var showIfAttribute = (ShowIfAttribute)attribute;
+
+            var root = new VisualElement();
+            root.style.overflow = Overflow.Hidden;
+
+            var field = new PropertyField(property);
+            root.Add(field);
+
+            UpdatePropertyVisual(property, showIfAttribute, field, root);
+
+            var watchedProperty = property.FindRelativeProperty(showIfAttribute.VariableName);
+
+            if (watchedProperty != null)
+            {
+                root.TrackPropertyValue(watchedProperty, _ =>
+                {
+                    UpdatePropertyVisual(property, showIfAttribute, field, root);
+                });
+            }
+
+            return root;
+        }
+
+        private static void UpdatePropertyVisual(SerializedProperty property, ShowIfAttribute showIfAttribute, PropertyField field, VisualElement rootContainer)
+        {
+            bool shouldShow = ComputeConditionOfRelativeProperty(property, showIfAttribute);
+
+            if (showIfAttribute.ShowDisabledField)
+            {
+                field.SetEnabled(shouldShow);
+            }
+            else
+            {
+                rootContainer.style.display = shouldShow ? DisplayStyle.Flex : DisplayStyle.None;
+                // ApplyVisibility(animationWrapper, shouldShow);
+            }
+        }
+
+        private static void ApplyVisibility(VisualElement element, bool visible)
+        {
+            element.style.opacity = visible ? 1f : 0f;
+
+            element.style.translate = visible
+                ? new Translate(0, 0)
+                : new Translate(0, -20);
+
+            element.style.transitionProperty = new List<StylePropertyName>
+            {
+                "opacity",
+                "translate"
+            };
+
+            element.style.transitionDuration = new List<TimeValue>
+            {
+                new(200, TimeUnit.Millisecond),
+                new(200, TimeUnit.Millisecond)
+            };
+        }
+        
+        // private static void ApplyVisibility(VisualElement element, bool visible)
+        // {
+        //     element.style.opacity = visible ? 1f : 0f;
+        //     element.style.marginTop = visible ? 0 : -EditorGUIUtility.singleLineHeight;
+        //     element.style.transitionProperty = new List<StylePropertyName>
+        //     {
+        //         "opacity",
+        //         "margin-top"
+        //     };
+        //     element.style.transitionDuration = new List<TimeValue>
+        //     {
+        //         new(200, TimeUnit.Millisecond),
+        //         new(200, TimeUnit.Millisecond)
+        //     };
+        // }
+        
+        #endregion
+        
+        #region IMGUI
+        
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             ShowIfAttribute showIfAttribute = (ShowIfAttribute)attribute;
@@ -23,16 +108,16 @@ namespace AdriKat.Toolkit.Attributes
             
             // The system always adds a standardVerticalSpacing between each property, even when HIDDEN by this attribute. So we compensate by subtracting it if we're faded.
             float verticalSpacingCompensation = (1 - faded) * EditorGUIUtility.standardVerticalSpacing;
-
+        
             return faded * EditorGUI.GetPropertyHeight(property, label, true) - verticalSpacingCompensation;
         }
         
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             ShowIfAttribute showIfAttribute = (ShowIfAttribute)attribute;
-
+        
             bool shouldShow = ComputeConditionOfRelativeProperty(property, showIfAttribute);
-
+        
             if (showIfAttribute.ShowDisabledField)
             {
                 GUI.enabled = shouldShow;
@@ -44,7 +129,25 @@ namespace AdriKat.Toolkit.Attributes
                 ManageFadeAnimation(position, property, label, shouldShow);
             }
         }
-
+        
+        private static void ManageFadeAnimation(Rect position, SerializedProperty property, GUIContent label, bool shouldShow)
+        {
+            float fade = EditorUtils.GetBoolAnimationFade(property.GetUniqueIDFromProperty(), shouldShow, 2f);
+        
+            // Get the full height the property would take at full opacity
+            float fullHeight = EditorGUI.GetPropertyHeight(property, label, true);
+            float labelWidth = EditorGUIUtility.labelWidth;
+            
+            EditorDrawUtils.DrawClippedFadeGroup(position, fade, fullHeight, rect =>
+            {
+                // Restore labelWidth (it can change when entering a group).
+                EditorGUIUtility.labelWidth = labelWidth;
+                EditorGUI.PropertyField(rect, property, label, true);
+            }, applyAlpha: true);
+        }
+        
+        #endregion
+        
         private static bool ComputeConditionOfRelativeProperty(SerializedProperty property, ShowIfAttribute showIfAttribute)
         {
             var variableName = showIfAttribute.VariableName;
@@ -97,22 +200,6 @@ namespace AdriKat.Toolkit.Attributes
             }
 
             return shouldShow;
-        }
-
-        private static void ManageFadeAnimation(Rect position, SerializedProperty property, GUIContent label, bool shouldShow)
-        {
-            float fade = EditorUtils.GetBoolAnimationFade(property.GetUniqueIDFromProperty(), shouldShow, 2f);
-
-            // Get the full height the property would take at full opacity
-            float fullHeight = EditorGUI.GetPropertyHeight(property, label, true);
-            float labelWidth = EditorGUIUtility.labelWidth;
-            
-            EditorDrawUtils.DrawClippedFadeGroup(position, fade, fullHeight, rect =>
-            {
-                // Restore labelWidth (it can change when entering a group).
-                EditorGUIUtility.labelWidth = labelWidth;
-                EditorGUI.PropertyField(rect, property, label, true);
-            }, applyAlpha: true);
         }
     }
 }
