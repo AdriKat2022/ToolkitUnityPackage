@@ -13,9 +13,9 @@ Facing this "issue" of copying scripts from other projects (which is not really 
 
 ![Unity Add Package Git URL](image-1.png)
 
-> **3. Paste the following URL in the input field: `https://github.com/AdriKat2022/UtilsUnityPackage.git`**
+> **3. Paste the following URL in the input field: `https://github.com/AdriKat2022/ToolkitUnityPackage.git`**
 
-_You can choose a specific version by appending "#v1.5.0" to the above URL if you would like to install the version v1.5.0 for example._
+_You can choose a specific version by appending `#v1.5.0` to the above URL if you would like to install the version `v1.5.0` for example._
 
 > **4. Click on `Install`**
 
@@ -25,25 +25,29 @@ _You can choose a specific version by appending "#v1.5.0" to the above URL if yo
 Part of the goal of this package is to provide scripts that are easy to use and understand. But also to get better at writing code that is clean, efficient, maintainable, and documented.
 
 ### Rules I follow for this development
+
+#### Code Readability
 Here are the rules I believe are great to follow when writing code that I abide to for this package:
 - **Coherent naming convention**: Private fields are prefixed with an underscore, public properties and methods are PascalCase, and other fields and local variables are camelCase.
 - **Consistent code style**: The code's indentation and braces placement is kept consistent.
 - **Well-placed comments**: Comments are used to explain the code's purpose, and to provide additional information when necessary. The code is kept to be as self-explanatory as possible.
 - **Code documentation**: Public methods and properties are always documented (if not, it means I forgot, you have the permission to yell at me if you find one).
+
+#### Code Architecture
 - **Encapsulation**: Fields are kept private unless useful for the average user of the code. Direct references are avoided in general contexts, therefore, I tend more to use events and delegates actions for callbacks.
-- **Efficiency**: I attempt to write code that is efficient and optimized. I avoid unnecessary operations and try to keep the code as clean as possible.
+- **Efficiency**: I attempt to write code that is efficient and optimized. However, if the performance gain is negligeable, I'll still prioritize readability for better maintenance.
 - **Unity API usage**: I try to use the Unity API in the most efficient way possible. I avoid using `Update()` when it's not necessary, and I use `OnEnable()` and `OnDisable()` when needed.
 - **DRY principle**: I use inheritance, interfaces and composition accordingly on top of other OOP principles to keep the code maintainable and reusable.
+- **Event Driven**: Events are one of our best friends for keeping the code uncoupled. I use them whenever 
 - **No magic numbers**: Using magic numbers in the code is close to banned. I use constants or serialized fields instead to keep the code extra flexible from the inspector.
 
+## Content List
+I intend to make this package grow and add all the must-go features for fast development.
+Some of the content could theoretically already be used for production.  
 
-## Content
-I intend to make this package grow in power and make it as much handy as possible.  
-With care and patience, it could even be useful for production.  
+Here is the current content of the package.
 
-For the moment, here are the current contents of this package.
-
-### [***NEW***] Audio ecosystem
+### [***NEW***] Audio Ecosystem
 *Always had to repeat the same process again and again with Audio/Sound/NoiseManager?*  
 ***Stop repeating !*** *The Toolkit AudioManager ecosystem will make you save valuable time.*  
 - `AudioManager` **class**: Generalised audio singleton. Has got the classic Play/Pause/Stop methods. You can have as many audio channels as you want, and you can override the used audio channel while using those methods.
@@ -53,18 +57,29 @@ For the moment, here are the current contents of this package.
 
 What's also really cool, is that audio settings concerning this ecosystem can be modified via a **scriptable object**, automatically created at `Assets/Settings/AudioSettings.asset`.
 
-### ***[NEW]*** Settings Provider
-*Settings providers can simplify and facilitate Data Driven Development (it's not really about DDD because it's more of an editor tool, but that sounded cool) by reducing needed code, because everything already works practically the same.*  
-*For example, in the previous Audio ecosystem section, I shortly presented audio settings that can be modified by you so the system suits your needs. This ecosystem uses the SettingsProvider*  
+Perfect for your casual Game Jam where you want you want to focus your attention on the audio design and the rest instead of wasting time resetting up everything again everytime.
 
-*Well if you would like to also have your own settings, that would be literally one line away. Make your `ThingSettingsSO` scriptable object with all your beloved settings (strings, ints, floats, anything you want). Then the literal and mythical single line:*
+**Use `Toolkit->Audio->Initialize Audio System`**
+
+### ***[NEW]*** Settings Provider
+*Settings providers can simplify and facilitate Data Driven Development (it's not really about DDD because it's more of an editor tool) by reducing needed code, because everything already works practically the same.*  
+*For example, in the previous Audio Ecosystem section, I shortly presented the `Audio Settings` that can be modified so the system suits your needs. This example uses the SettingsProvider.*  
+
+*Well if you would like to also have your own settings, that would be literally one line away. Make your `ThingSettingsSO` scriptable object with all your beloved settings (strings, ints, floats, anything you want). Then all you need is this literal and mythical single line:*
 
 - `public class ThingSettingsProvider : SettingsProvider<ThingSettingsSO> {}`
 
-Yes that's all.  
-*Now the second you want to access it, just use `ThingSettingsProvider.GetOrCreateSettings().YourSuperStringSetting`.*
+Yes that's all. You can put it wherever you want (as long as it's in an editor script). For a runtime version of this (usable-ingame), see the `DataSaver` class which works similarly.  
+*Now the second you want to access it, just use `ThingSettingsProvider.GetOrCreateSettings().YourSuperStringSetting`. And it uses caching so don't worry about abusing it!*
+
+### ***[NEW]*** DataSaver
+*Allows to save or load data in the editor or at runtime from the permanent game-storage.*  
+See that PlayerSaveData class with all the player data you would like to save/load? Just use:
+For saving:  `DataSaver.SaveData(myClassObject, "playerData");`
+For loading: `var myData = DataSaver.LoadData<PlayerSaveData>("playerData");`
 
 ### Debugging
+- **DictionaryViewer**: Wants to see the contents of a GameObject's dictionary? Open Toolkit->Debugging->DictionaryViewer, and select the game object you want to inspect! It will scan for all dictionaries and display them.
 - **LiveLogger class**: Allows easy log display inspired by the UnrealEngine logging system. Offers a new log feedback layer by unclogging the Unity console for specific logs, or straight up if the Unity console is unavailable.
 
 ### [***NEW***] Attributes for the Unity Editor
@@ -76,10 +91,12 @@ Yes that's all.
 - `[ShowIf]` — Conditionally shows or hides a field in the inspector. The condition can be a bool field or a function returning a bool.
 - `[WarnIf]` — Conditionally shows a warning above a field in the inspector. The condition can be a bool field or a function returning a bool.
 
+Most of the presented attributes above have further options to allow finer tuning, for example the `[ShowIf]` attribute can be set to invert the condition, or set to just disable the field instead of hiding it.
+
 _What do you mean it's inspired from "Oclin"? "Idin"? Nope, absolutely no clue what you're talking about._
 
 ### Code Patterns
-- `Singleton` **class**: A simple Singleton pattern implementation.
+- `Singleton` **class**: A simple Singleton pattern implementation. The `AudioManager` class is an example use case.
 - `SingletonThreadSafe` **class**: A simple Singleton pattern with a safer implementation for threads.
 
 ### Animations
@@ -95,7 +112,7 @@ _What do you mean it's inspired from "Oclin"? "Idin"? Nope, absolutely no clue w
 - `CameraShake` **class**: Smart shaking effect that can be used on any Transform. A good example would involve the camera. Provides many options to tweak the shake effect.
 
 ### UI Elements
-- [***NEW***] `DraggableWindow` **class**: Handles an object that can be dragged by the player anywhere on the screen. It can also be resized by using a knob using the `ResizableArea` script.  
+- `DraggableWindow` **class**: Handles an object that can be dragged by the player anywhere on the screen. It can also be resized by using a knob using the `ResizableArea` script.  
 - `SlideSelector` **class**: Small selector system allowing a user to select something among various options. Includes previous/next buttons, swiping, object click and submitting. **Does NOT require a RectTransform (Transforms work fine).**
 - `HoldAction` **class**: Script that allows to trigger an action when holding a button for a certain amount of time. Provides many options to tweak the holding visual effect.
 - `SimpleTimer` **class**: Simple timer that can be used to display a count-up (and a countdown comming soon). Format is automated.
