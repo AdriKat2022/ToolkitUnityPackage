@@ -9,7 +9,7 @@ namespace AdriKat.Toolkit.Settings
     /// See example use in AdriKat.Toolkit.Settings.AudioSettings.cs
     /// </summary>
     /// <typeparam name="T">The ScriptableObject storing your settings.</typeparam>
-    public class SettingsProvider<T> where T : ScriptableObject, IDefaultInitializable
+    public class EditorSettingsProvider<T> where T : ScriptableObject, IDefaultInitializable
     {
         private const string SETTINGS_FOLDER = "Assets/Settings";
 
@@ -42,6 +42,7 @@ namespace AdriKat.Toolkit.Settings
 
             _settings = ScriptableObject.CreateInstance<T>();
             _settings.SetDefault();
+            
             AssetDatabase.CreateAsset(_settings, fullPath);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();

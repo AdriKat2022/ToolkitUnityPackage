@@ -1,7 +1,9 @@
 ﻿using System.Reflection;
 using AdriKat.Toolkit.Utility.Extensions;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace AdriKat.Toolkit.Attributes
 {
@@ -10,6 +12,99 @@ namespace AdriKat.Toolkit.Attributes
     {
         private const float PADDING = 10;
         private const float SPACING = 2;
+        
+        #region UI Toolkit
+        
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
+            var buttonActionAttribute = (ButtonActionAttribute)attribute;
+
+            VisualElement root = new VisualElement();
+            VisualElement buttonContainer = MakeButtonsForProperty(property, buttonActionAttribute);
+
+            if (buttonActionAttribute.showButtonBelow)
+            {
+                root.Add(new PropertyField(property));
+                root.Add(buttonContainer);
+                buttonContainer.style.marginTop = buttonActionAttribute.heightSpacing;
+            }
+            else
+            {
+                root.Add(buttonContainer);
+                root.Add(new PropertyField(property));
+                buttonContainer.style.marginBottom = buttonActionAttribute.heightSpacing;
+            }
+
+            return root;
+        }
+
+        private static VisualElement MakeButtonsForProperty(SerializedProperty property, ButtonActionAttribute buttonActionAttribute)
+        {
+            var buttonContainer = new VisualElement
+            {
+                style =
+                {
+                    flexDirection = FlexDirection.Row
+                }
+            };
+
+            int actionCount = buttonActionAttribute.actionNames.Length;
+
+            string[] optionalNames = buttonActionAttribute.customNames?.Split('|');
+            
+            for (int i = 0; i < actionCount; i++)
+            {
+                string actionName = buttonActionAttribute.actionNames[i];
+
+                if (string.IsNullOrEmpty(actionName)) continue;
+
+                var method = property.serializedObject.targetObject
+                    .GetType()
+                    .GetMethod(
+                        actionName,
+                        BindingFlags.NonPublic |
+                        BindingFlags.Public |
+                        BindingFlags.Instance
+                    );
+
+                var button = new Button();
+
+                if (optionalNames == null)
+                {
+                    button.text = buttonActionAttribute.nicifyVariableNames ? ObjectNames.NicifyVariableName(actionName) : actionName;
+                }
+                else
+                {
+                    button.text = optionalNames[i%optionalNames.Length];
+                }
+
+                if (method == null)
+                {
+                    button.style.color = Color.red;
+                }
+
+                button.clicked += () =>
+                {
+                    if (method != null)
+                    {
+                        method.Invoke(property.serializedObject.targetObject, null);
+                    }
+                    else
+                    {
+                        Debug.LogError($"Method {actionName} not found in {property.serializedObject.targetObject.GetType().Name}");
+                    }
+                };
+
+                button.style.flexGrow = 1;
+                buttonContainer.Add(button);
+            }
+
+            return buttonContainer;
+        }
+
+        #endregion
+        
+        #region IMGUI
         
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -67,12 +162,14 @@ namespace AdriKat.Toolkit.Attributes
                 EditorGUI.PropertyField(position, property, label, true);
             }
         }
-
+        
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             var buttonActionAttribute = (ButtonActionAttribute)attribute;
             
             return base.GetPropertyHeight(property, label) + EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing + buttonActionAttribute.heightSpacing;
         }
+        
+        #endregion
     }
 }
