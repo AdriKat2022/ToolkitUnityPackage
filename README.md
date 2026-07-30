@@ -59,7 +59,7 @@ What's also really cool, is that audio settings concerning this ecosystem can be
 
 Perfect for your casual Game Jam where you want you want to focus your attention on the audio design and the rest instead of wasting time resetting up everything again everytime.
 
-**Use `Toolkit->Audio->Initialize Audio System`**
+**Run in the taskbar `Toolkit->Audio->Initialize Audio System` and get it going in 10 seconds.**
 
 ### ***[NEW]*** Settings Provider
 *Settings providers can simplify and facilitate Data Driven Development (it's not really about DDD because it's more of an editor tool) by reducing needed code, because everything already works practically the same.*  
@@ -74,9 +74,10 @@ Yes that's all. You can put it wherever you want (as long as it's in an editor s
 
 ### ***[NEW]*** DataSaver
 *Allows to save or load data in the editor or at runtime from the permanent game-storage.*  
-See that PlayerSaveData class with all the player data you would like to save/load? Just use:
-For saving:  `DataSaver.SaveData(myClassObject, "playerData");`
-For loading: `var myData = DataSaver.LoadData<PlayerSaveData>("playerData");`
+See that PlayerSaveData class with all the player data you would like to save/load?  
+Just use:  
+- For saving:  `DataSaver.SaveData(myClassObject, "playerData");`
+- For loading: `var myData = DataSaver.LoadData<PlayerSaveData>("playerData");`
 
 ### Debugging
 - **DictionaryViewer**: Wants to see the contents of a GameObject's dictionary? Open Toolkit->Debugging->DictionaryViewer, and select the game object you want to inspect! It will scan for all dictionaries and display them.
