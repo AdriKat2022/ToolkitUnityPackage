@@ -28,7 +28,7 @@ namespace AdriKat.Toolkit.Attributes
 
             if (watchedProperty != null)
             {
-                root.TrackPropertyValue(watchedProperty, _ =>
+                root.TrackSerializedObjectValue(property.serializedObject, _ =>
                 {
                     UpdatePropertyVisual(property, showIfAttribute, field, root);
                 });
