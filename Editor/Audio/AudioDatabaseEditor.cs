@@ -453,11 +453,13 @@ namespace AdriKat.Toolkit.Audio
                 
                 if (promptUserForPath && !skipPrompt)
                 {
+                    string directory = Path.GetDirectoryName(dbPath)?.Replace("\\", "/");
+                    
                     // Customize.
                     dbPath = EditorUtility.SaveFilePanelInProject(
                         "Create AudioDatabase",
                         "AudioDatabase",
-                        "asset", "Choose where the AudioDatabase asset will be saved. This asset is where all your audio files will be referenced.", dbPath);
+                        "asset", "Choose where the AudioDatabase asset will be saved. This asset is where all your audio files will be referenced.", directory);
                 }
 
                 if (dbPath == null)
