@@ -12,7 +12,6 @@ namespace AdriKat.Toolkit.Animations
         [Header("Time")]
         [Tooltip("Whether is will use the Time.unscaledDeltaTime instead of the regular Time.deltaTime. Useful for pause menus that must function when the timescale is 0.")]
         public bool useUnscaledDeltaTime;
-        public bool activateOnAwake = true;
         
         [Header("Settings")]
         public WaveRotationSettings waveRotationSettings;
@@ -156,14 +155,14 @@ namespace AdriKat.Toolkit.Animations
 
         public void OnPointerEnter(PointerEventData eventData)
         {
+            _isMouseOver = true;
+            
             if (fireEvents) onHover.Invoke();
             
             if (playSoundOnHover)
             {
                 AudioSource.PlayClipAtPoint(soundOnHover, Camera.main.transform.position);
             }
-
-            _isMouseOver = true;
         }
 
         public void OnPointerExit(PointerEventData eventData)
@@ -173,14 +172,14 @@ namespace AdriKat.Toolkit.Animations
 
         public void OnPointerDown(PointerEventData eventData)
         {
-            if (fireEvents) onClickDown.Invoke();
             _isMouseClicked = true;
+            if (fireEvents) onClickDown.Invoke();
         }
 
         public void OnPointerUp(PointerEventData eventData)
         {
-            if (fireEvents) onClickUp.Invoke();
             _isMouseClicked = false;
+            if (fireEvents) onClickUp.Invoke();
         }
         
         private void UpdateVectorScales()
