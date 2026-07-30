@@ -112,7 +112,7 @@ namespace AdriKat.Toolkit.Audio
                 AssetDatabase.Refresh();
             }
 
-            Debug.Log(audioSettings.AudioIDClassName + ".cs is now up to date.", EditorUtils.GetPingableFile(path));
+            Debug.Log(audioSettings.AudioIDClassName + ".cs is now up to date.", EditorUtils.GetPingableFileReference(path));
         }
     }
 }

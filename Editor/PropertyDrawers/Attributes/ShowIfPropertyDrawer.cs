@@ -24,7 +24,7 @@ namespace AdriKat.Toolkit.Attributes
 
             UpdatePropertyVisual(property, showIfAttribute, field, root);
 
-            var watchedProperty = property.FindRelativeProperty(showIfAttribute.VariableName);
+            var watchedProperty = property.FindSiblingProperty(showIfAttribute.VariableName);
 
             if (watchedProperty != null)
             {
@@ -114,7 +114,7 @@ namespace AdriKat.Toolkit.Attributes
         private static bool ComputeConditionOfRelativeProperty(SerializedProperty property, ShowIfAttribute showIfAttribute)
         {
             var variableName = showIfAttribute.VariableName;
-            SerializedProperty propertyToCompare = property.FindRelativeProperty(variableName);
+            SerializedProperty propertyToCompare = property.FindSiblingProperty(variableName);
             
             bool shouldShow;
 
@@ -143,7 +143,7 @@ namespace AdriKat.Toolkit.Attributes
                 
                 if (showIfAttribute.ComparerValueIsVariableName)
                 {
-                    comparerValue = property.FindRelativeProperty((string)comparerValue)?.boxedValue;
+                    comparerValue = property.FindSiblingProperty((string)comparerValue)?.boxedValue;
                     if (comparerValue == null)
                     {
                         Debug.LogError($"ShowIfAttribute: Could not find property '{showIfAttribute.ComparerValue}' to compare with '{variableName}' for property '{property.name}'.");

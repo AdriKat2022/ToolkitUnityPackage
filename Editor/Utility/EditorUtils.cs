@@ -188,7 +188,14 @@ namespace AdriKat.Toolkit.Utility
             return result;
         }
 
-        public static SerializedProperty FindRelativeProperty(this SerializedProperty property, string variableName)
+        /// <summary>
+        /// Finds a sibling property of the given SerializedProperty by its variable name.<br/>
+        /// The sibling property is expected to be at the same level in the hierarchy as the original property.
+        /// </summary>
+        /// <param name="property">The original property.</param>
+        /// <param name="variableName">The sibling property's name to find.</param>
+        /// <returns>The sibling property or null if wasn't found.</returns>
+        public static SerializedProperty FindSiblingProperty(this SerializedProperty property, string variableName)
         {
             string path = property.propertyPath;
 
@@ -215,7 +222,7 @@ namespace AdriKat.Toolkit.Utility
         public static bool ResolveCondition(SerializedProperty property, string conditionName, object comparerValue = null, bool comparerValueIsVariableName = false)
         {
             var variableName = conditionName;
-            SerializedProperty propertyToCompare = property.FindRelativeProperty(variableName);
+            SerializedProperty propertyToCompare = property.FindSiblingProperty(variableName);
             
             if (propertyToCompare == null)
             {
@@ -246,7 +253,7 @@ namespace AdriKat.Toolkit.Utility
             if (comparerValueIsVariableName)
             {
                 string variableNameValue = (string)comparerValue;
-                comparerValue = property.FindRelativeProperty((string)comparerValue)?.boxedValue;
+                comparerValue = property.FindSiblingProperty((string)comparerValue)?.boxedValue;
                 if (comparerValue == null)
                 {
                     Debug.LogError($"ShowIfAttribute: Could not find property '{variableNameValue}' to compare with '{variableName}' for property '{property.name}'.");
@@ -502,9 +509,14 @@ namespace AdriKat.Toolkit.Utility
             }
         }
 
-        public static Object GetPingableFile(string file)
+        /// <summary>
+        /// Turns a filepath into an object. Useful for pinging files within Debug.Log calls.
+        /// </summary>
+        /// <param name="filepath">Path of the file to reference.</param>
+        /// <returns>A reference to the file at filepath as an object.</returns>
+        public static Object GetPingableFileReference(string filepath)
         {
-            return AssetDatabase.LoadAssetAtPath<Object>(file);
+            return AssetDatabase.LoadAssetAtPath<Object>(filepath);
         }
         
         #endregion
