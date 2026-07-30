@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace AdriKat.Toolkit.Audio
 {
-    [AddComponentMenu("TK/Audio/Audio Manager")]
+    [AddComponentMenu("Toolkit/Audio/Audio Manager")]
     public class AudioManager : Singleton<AudioManager>
     {
         [Header("Audio Database")]
@@ -266,11 +266,11 @@ namespace AdriKat.Toolkit.Audio
             
             GameObject musicSource = new GameObject("Music Source");
             var music = musicSource.AddComponent<AudioSource>();
-            GameObject sfxSource = new GameObject("SFX Source");
-            var sfx = sfxSource.AddComponent<AudioSource>();
-            
             music.loop = true;
             music.playOnAwake = false;
+            
+            GameObject sfxSource = new GameObject("SFX Source");
+            var sfx = sfxSource.AddComponent<AudioSource>();
             sfx.loop = false;
             sfx.playOnAwake = false;
             

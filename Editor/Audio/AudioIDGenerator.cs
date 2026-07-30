@@ -13,6 +13,7 @@ namespace AdriKat.Toolkit.Audio
 {
     public static class AudioIDGenerator
     {
+        public const string AUDIO_DATABASE_DEFAULT_PATH = "Assets/Audio/AudioDatabase.asset";
         private const string FILE_REPLACE_PATTERN = "[ -#%!~&+']";
 
         private static string _lastScriptLocation;
@@ -25,11 +26,11 @@ namespace AdriKat.Toolkit.Audio
             // Load the database first from the settings, or from the 'resources' folder.
             var db = audioSettings.DefaultAudioDatabase ?
                 audioSettings.DefaultAudioDatabase :
-                Resources.Load<AudioDatabase>("AudioDatabase");
+                AssetDatabase.LoadAssetAtPath<AudioDatabase>(AUDIO_DATABASE_DEFAULT_PATH);
             
             if (db == null)
             {
-                Debug.LogWarning("No AudioDatabase is referenced in AudioSettings, and no database has been found in the Resources folder (Create->Audio->AudioDatabase). Ensure its name is exactly 'AudioDatabase.asset'.");
+                Debug.LogWarning("No AudioDatabase is referenced in AudioSettings, and no database has been found in the Audio folder (Create->Audio->AudioDatabase). Ensure its name is exactly 'AudioDatabase.asset'.");
                 return;
             }
             

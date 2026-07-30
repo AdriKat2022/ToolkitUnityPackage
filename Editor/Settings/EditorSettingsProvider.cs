@@ -12,8 +12,10 @@ namespace AdriKat.Toolkit.Settings
     public class EditorSettingsProvider<T> where T : ScriptableObject, IDefaultInitializable
     {
         private const string SETTINGS_FOLDER = "Assets/Settings";
-
+        
         private static T _settings;
+        
+        private static string FullPath => Path.Combine(SETTINGS_FOLDER, $"{typeof(T).Name}.asset");
 
         /// <summary>
         /// Retrieves an instance of the settings object of type <typeparamref name="T"/>. If the settings object
@@ -24,16 +26,13 @@ namespace AdriKat.Toolkit.Settings
         /// <returns>The existing or newly created settings object of type <typeparamref name="T"/>.</returns>
         public static T GetOrCreateSettings()
         {
-            // Return from cache if existing.
-            if (_settings != null) return _settings;
+            T settings = GetSettings();
             
-            string fullPath = Path.Combine(SETTINGS_FOLDER, $"{typeof(T).Name}.asset");
-            
-            _settings = AssetDatabase.LoadAssetAtPath<T>(fullPath);
+            return settings != null ? settings : CreateSettings();
+        }
 
-            // Return if just found it.
-            if (_settings != null) return _settings;
-            
+        public static T CreateSettings()
+        {
             // Create a new one.
             if (!Directory.Exists(SETTINGS_FOLDER))
             {
@@ -43,13 +42,28 @@ namespace AdriKat.Toolkit.Settings
             _settings = ScriptableObject.CreateInstance<T>();
             _settings.SetDefault();
             
-            AssetDatabase.CreateAsset(_settings, fullPath);
+            AssetDatabase.CreateAsset(_settings, FullPath);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
             return _settings;
         }
 
+        public static T GetSettings()
+        {
+            // Return from cache if existing.
+            if (_settings != null) return _settings;
+            
+            _settings = AssetDatabase.LoadAssetAtPath<T>(FullPath);
+
+            return _settings;
+        }
+        
+        public static bool DoesSettingsExist()
+        {
+            return GetSettings() != null;
+        }
+        
         public static void OpenSettingsForUser()
         {
             EditorUtility.OpenPropertyEditor(GetOrCreateSettings());

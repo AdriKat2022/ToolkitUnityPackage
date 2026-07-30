@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using AdriKat.Toolkit.Utility;
 using UnityEditor;
+using UnityEditor.VersionControl;
 using UnityEditorInternal;
 using UnityEngine;
 
@@ -11,29 +12,32 @@ namespace AdriKat.Toolkit.Audio
     [CustomEditor(typeof(AudioDatabase), true)]
     public class AudioDatabaseEditor : Editor
     {
-        private ReorderableList list;
         private SerializedProperty allSoundsProp;
 
-        private string searchFilter = "";
-        private string audioClipsFolder;
-        private bool enableDatabaseSynchronisation;
-        private bool deleteLinkedAudioData;
+        private string _searchFilter = "";
+        private string _audioClipsFolder;
+        private bool _enableDatabaseSynchronisation;
+        private bool _deleteLinkedAudioData;
+        
+        #region IMGUI
+        
+        private ReorderableList _reorderableList;
         
         private void OnEnable()
         {
-            audioClipsFolder = AudioSettingsProvider.GetOrCreateSettings().DefaultAudioClipsFolder;
+            _audioClipsFolder = AudioSettingsProvider.GetOrCreateSettings().DefaultAudioClipsFolder;
             allSoundsProp = serializedObject.FindProperty("allSounds");
 
-            list = new ReorderableList(serializedObject, allSoundsProp, true, true, true, true);
+            _reorderableList = new ReorderableList(serializedObject, allSoundsProp, true, true, true, true);
 
-            list.drawHeaderCallback = rect =>
+            _reorderableList.drawHeaderCallback = rect =>
             {
                 EditorGUI.LabelField(rect, "Audio Database");
             };
 
-            list.drawElementCallback = DrawElement;
+            _reorderableList.drawElementCallback = DrawElement;
 
-            list.elementHeightCallback = index =>
+            _reorderableList.elementHeightCallback = index =>
             {
                 var element = allSoundsProp.GetArrayElementAtIndex(index);
                 if (element.objectReferenceValue == null)
@@ -42,7 +46,7 @@ namespace AdriKat.Toolkit.Audio
                 return EditorGUIUtility.singleLineHeight * 5 + 12;
             };
 
-            list.onAddCallback = OnAdd;
+            _reorderableList.onAddCallback = OnAdd;
         }
 
         public override void OnInspectorGUI()
@@ -53,7 +57,7 @@ namespace AdriKat.Toolkit.Audio
             EditorGUILayout.Space(5);
             DrawDragAndDropArea();
             EditorGUILayout.Space(5);
-            list.DoLayoutList();
+            _reorderableList.DoLayoutList();
             DrawButtons();
             ValidateDuplicates();
             EditorGUILayout.Space(10);
@@ -68,10 +72,10 @@ namespace AdriKat.Toolkit.Audio
         {
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
 
-            searchFilter = GUILayout.TextField(searchFilter, GUI.skin.FindStyle("ToolbarSearchTextField"));
+            _searchFilter = GUILayout.TextField(_searchFilter, GUI.skin.FindStyle("ToolbarSearchTextField"));
             if (GUILayout.Button("", GUI.skin.FindStyle("ToolbarSearchCancelButton")))
             {
-                searchFilter = "";
+                _searchFilter = "";
                 GUI.FocusControl(null);
             }
 
@@ -120,6 +124,13 @@ namespace AdriKat.Toolkit.Audio
             }
             
             GUILayout.EndHorizontal();
+            
+            if (GUILayout.Button("Set This As Default Database"))
+            {
+                AudioSettings audioSettings = AudioSettingsProvider.GetOrCreateSettings();
+                audioSettings.DefaultAudioDatabase = (AudioDatabase)target;
+                EditorUtility.SetDirty(audioSettings);
+            }
         }
         
         private void DrawElement(Rect rect, int index, bool isActive, bool isFocused)
@@ -135,8 +146,8 @@ namespace AdriKat.Toolkit.Audio
 
             var audioData = element.objectReferenceValue as AudioData;
 
-            if (!string.IsNullOrEmpty(searchFilter) &&
-                !audioData.id.ToLower().Contains(searchFilter.ToLower()))
+            if (!string.IsNullOrEmpty(_searchFilter) &&
+                !audioData.id.ToLower().Contains(_searchFilter.ToLower()))
                 return;
 
             SerializedObject audioSO = new SerializedObject(audioData);
@@ -175,16 +186,16 @@ namespace AdriKat.Toolkit.Audio
         {
             EditorGUILayout.HelpBox("Synchronising your database with the selected folder below will empty the database and recreate an entry for each AudioClip in the specified folder. It will also wipe all AudioData assets in the folder where the new ones will be created.", MessageType.Info, true);
 
-            enableDatabaseSynchronisation = EditorGUILayout.Toggle($"Enable Database Synchronisation", enableDatabaseSynchronisation);
+            _enableDatabaseSynchronisation = EditorGUILayout.Toggle($"Enable Database Synchronisation", _enableDatabaseSynchronisation);
 
-            if (!enableDatabaseSynchronisation) return;
+            if (!_enableDatabaseSynchronisation) return;
             
-            deleteLinkedAudioData = EditorGUILayout.Toggle($"Delete All Linked AudioDatas", deleteLinkedAudioData);
+            _deleteLinkedAudioData = EditorGUILayout.Toggle($"Delete All Linked AudioDatas", _deleteLinkedAudioData);
             
-            audioClipsFolder = EditorGUILayout.TextField("Audio Clips Folder", audioClipsFolder);
+            _audioClipsFolder = EditorGUILayout.TextField("Audio Clips Folder", _audioClipsFolder);
 
             // Check if audioClipsFolder exists.
-            bool isValid = Directory.Exists(audioClipsFolder);
+            bool isValid = Directory.Exists(_audioClipsFolder);
 
             if (!isValid)
             {
@@ -193,9 +204,9 @@ namespace AdriKat.Toolkit.Audio
             else
             {
                 string audioDataCreationFolder = AudioSettingsProvider.GetOrCreateSettings().AudioDataCreationFolder;
-                int audioDataAssetsToCreateCount = AssetDatabase.FindAssets($"t:{nameof(AudioClip)}", new[] { audioClipsFolder }).Length;
+                int audioDataAssetsToCreateCount = AssetDatabase.FindAssets($"t:{nameof(AudioClip)}", new[] { _audioClipsFolder }).Length;
                 int audioDataAssetsToDeleteCount = AssetDatabase.FindAssets($"t:{nameof(AudioData)}", new[] { audioDataCreationFolder }).Length;
-                if (deleteLinkedAudioData)
+                if (_deleteLinkedAudioData)
                 {
                     EditorGUILayout.HelpBox($"Will delete all AudioData assets listed in this database.", MessageType.Info, false);
                 }
@@ -220,9 +231,9 @@ namespace AdriKat.Toolkit.Audio
 
         private void AddAudioDataToList(AudioData audioData)
         {
-            list.serializedProperty.arraySize++;
-            list.index = list.serializedProperty.arraySize - 1;
-            list.serializedProperty.GetArrayElementAtIndex(list.index).objectReferenceValue = audioData;
+            _reorderableList.serializedProperty.arraySize++;
+            _reorderableList.index = _reorderableList.serializedProperty.arraySize - 1;
+            _reorderableList.serializedProperty.GetArrayElementAtIndex(_reorderableList.index).objectReferenceValue = audioData;
         }
         
         private void CreateNewAudioData()
@@ -271,6 +282,8 @@ namespace AdriKat.Toolkit.Audio
             }
         }
 
+        #endregion
+        
         #region Audio Preview
         
         // ----------------------------------------------------
@@ -310,7 +323,7 @@ namespace AdriKat.Toolkit.Audio
 
         private void SynchroniseClipsWithDatabase()
         {
-            if (deleteLinkedAudioData)
+            if (_deleteLinkedAudioData)
             {
                 // Delete all assets linked to this database.
                 AudioData[] allSounds = allSoundsProp.ExtractArray<AudioData>();
@@ -333,7 +346,7 @@ namespace AdriKat.Toolkit.Audio
             Debug.Log($"Deleted {allAudioDatas.Length} AudioData assets in the destination folder.");
             
             // Add back all sounds in the folder.
-            IEnumerable<AudioClip> allAudioClips = AssetDatabase.FindAssets($"t:{nameof(AudioClip)}", new[] { audioClipsFolder })
+            IEnumerable<AudioClip> allAudioClips = AssetDatabase.FindAssets($"t:{nameof(AudioClip)}", new[] { _audioClipsFolder })
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Select(AssetDatabase.LoadAssetAtPath<AudioClip>);
             
@@ -347,13 +360,137 @@ namespace AdriKat.Toolkit.Audio
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            enableDatabaseSynchronisation = false;
+            _enableDatabaseSynchronisation = false;
         }
             
         [MenuItem("Toolkit/Audio/Audio Settings")]
         private static void OpenAudioSettings()
         {
             AudioSettingsProvider.OpenSettingsForUser();
+        }
+
+        [MenuItem("Toolkit/Audio/Initialise Audio System")]
+        private static void InitAudio()
+        {
+            AudioSettings audioSettings = AudioSettingsProvider.GetSettings();
+            bool didSettingsExist = audioSettings != null;
+            
+            if (!didSettingsExist)
+            {
+                audioSettings = AudioSettingsProvider.CreateSettings();
+            }
+            
+            int choice = EditorUtility.DisplayDialogComplex("Toolkit Audio Setup", "The Audio Ecosystem Toolkit will be initialized with :\n" +
+                                                                      "- 1 AudioDatabase scriptable object (Audio folder);\n" +
+                                                                      "- 1 AudioSettings scriptable object (Settings folder);\n" +
+                                                                      "\nWould you like to go with defaults or customize the initialization?", "Use Defaults", "Cancel", "Customize");
+            if (choice == 1) return;
+            
+            
+            // AUDIO SETTINGS RESET
+            bool resetSettings = true;
+            if (didSettingsExist)
+            {
+                // Warn about default initializing: it will overwrite everything.
+                resetSettings = EditorUtility.DisplayDialog("Audio Settings Initialization", "AudioSettings already exists. Do you want to overwrite it with default values? This will reset all your settings.", "Overwrite", "Keep Existing");
+            }
+
+            if (resetSettings)
+            {
+                // Default initialize everything.
+                audioSettings.SetDefault();
+                EditorUtility.SetDirty(audioSettings);
+                AssetDatabase.SaveAssets();
+                Debug.Log("AudioSettings has been reset to default values.", audioSettings);
+            }
+            
+            
+            // AUDIO DATABASE CREATION
+            if (audioSettings.DefaultAudioDatabase == null || choice == 2)
+            {
+                string dbPath = AudioIDGenerator.AUDIO_DATABASE_DEFAULT_PATH;
+
+                bool wouldOverwrite = File.Exists(dbPath);
+                bool promptUserForPath = choice == 2 || wouldOverwrite;
+                bool createNewDb = true;
+                bool skipPrompt = false;
+
+                if (promptUserForPath)
+                {
+                    if (wouldOverwrite)
+                    {
+                        skipPrompt = !EditorUtility.DisplayDialog("Audio Database Initialization", "An AudioDatabase asset already exists at the default path. Set the existing database as default and move on?", "Confirm path and overwrite existing", "Set as default and skip");
+
+                        if (skipPrompt)
+                        {
+                            // Set existing as default.
+                            createNewDb = false;
+                            var existingAudioDb = AssetDatabase.LoadAssetAtPath<AudioDatabase>(dbPath);
+                            if (existingAudioDb != null)
+                            {
+                                audioSettings.DefaultAudioDatabase = existingAudioDb;
+                                EditorUtility.SetDirty(audioSettings);
+                                AssetDatabase.SaveAssets();
+                                Debug.Log($"Existing AudioDatabase at {dbPath} set as default.", existingAudioDb);
+                            }
+                            else
+                            {
+                                Debug.LogError($"Failed to load existing AudioDatabase at {dbPath}. Initialization cancelled.");
+                                return;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        bool ok = EditorUtility.DisplayDialog("Audio Database Initialization", "Choose a path for the new AudioDatabase asset.", "Ok", "Cancel");
+                        if (!ok)
+                        {
+                            Debug.Log("Initialization Cancelled.");
+                            return;
+                        }
+                    }
+                }
+                
+                if (promptUserForPath && !skipPrompt)
+                {
+                    // Customize.
+                    dbPath = EditorUtility.SaveFilePanelInProject(
+                        "Create AudioDatabase",
+                        "AudioDatabase",
+                        "asset", "Choose where the AudioDatabase asset will be saved. This asset is where all your audio files will be referenced.", dbPath);
+                }
+
+                if (dbPath == null)
+                {
+                    Debug.Log("Initialization Cancelled");
+                    return;
+                }
+
+                if (createNewDb)
+                {
+                    // Create a new AudioDatabase asset.
+                    AudioDatabase newDatabase = CreateInstance<AudioDatabase>();
+                    AssetDatabase.CreateAsset(newDatabase, dbPath);
+                    audioSettings.DefaultAudioDatabase = newDatabase;
+                    EditorUtility.SetDirty(audioSettings);
+                    AssetDatabase.SaveAssets();
+                    AssetDatabase.Refresh();
+                    Debug.Log($"Created new AudioDatabase at {dbPath}", newDatabase);
+                }
+            }
+            else
+            {
+                Debug.Log($"Audio Database is already initialized at {AssetDatabase.GetAssetPath(audioSettings.DefaultAudioDatabase)}.", audioSettings.DefaultAudioDatabase);
+            }
+            
+            bool openSettings = EditorUtility.DisplayDialog("Audio System Initialization", "Audio System has been initialized successfully.", "Open AudioSettings", "Close");
+
+            if (openSettings)
+            {
+                OpenAudioSettings();
+            }
+            
+            Debug.Log("Initialization finished.");
         }
     }
 }
