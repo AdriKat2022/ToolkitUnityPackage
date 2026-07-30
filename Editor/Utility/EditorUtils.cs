@@ -502,6 +502,11 @@ namespace AdriKat.Toolkit.Utility
             }
         }
 
+        public static Object GetPingableFile(string file)
+        {
+            return AssetDatabase.LoadAssetAtPath<Object>(file);
+        }
+        
         #endregion
 
         private class NullType

@@ -14,8 +14,8 @@ namespace AdriKat.Toolkit.Utility
     {
         private const float ToggleWidth = 100;
 
-        private float cachedMinWidth = 0;
-        private float cachedMinHeight = 0;
+        private float cachedMinWidth;
+        private float cachedMinHeight;
         private float cachedMaxWidth = 100;
         private float cachedMaxHeight = 100;
 
@@ -89,19 +89,19 @@ namespace AdriKat.Toolkit.Utility
                     if (useRectTransformWidthAsMin.boolValue && !useRectTransformWidthAsMin.hasMultipleDifferentValues)
                     {
                         // Set the max height to the rect transform width
-                        var rectTransform = fitInRectTransform.objectReferenceValue as UnityEngine.RectTransform;
+                        var rectTransform = fitInRectTransform.objectReferenceValue as RectTransform;
                         minW.floatValue = rectTransform.rect.width;
                     }
                     if (useRectTransformWidthAsMax.boolValue && !useRectTransformWidthAsMax.hasMultipleDifferentValues)
                     {
                         // Set the max height to the rect transform width
-                        var rectTransform = fitInRectTransform.objectReferenceValue as UnityEngine.RectTransform;
+                        var rectTransform = fitInRectTransform.objectReferenceValue as RectTransform;
                         maxW.floatValue = rectTransform.rect.width;
                     }
                 }
                 else
                 {
-                    var rectTransform = fitInRectTransform.objectReferenceValue as UnityEngine.RectTransform;
+                    var rectTransform = fitInRectTransform.objectReferenceValue as RectTransform;
                     minW.floatValue = rectTransform.rect.width;
                     maxW.floatValue = rectTransform.rect.width;
                     row.y += lh + sp;
@@ -146,19 +146,19 @@ namespace AdriKat.Toolkit.Utility
                     if (useRectTransformHeightAsMin.boolValue && !useRectTransformHeightAsMin.hasMultipleDifferentValues)
                     {
                         // Set the max height to the rect transform height
-                        var rectTransform = fitInRectTransform.objectReferenceValue as UnityEngine.RectTransform;
+                        var rectTransform = fitInRectTransform.objectReferenceValue as RectTransform;
                         minH.floatValue = rectTransform.rect.height;
                     }
                     if (useRectTransformHeightAsMax.boolValue && !useRectTransformHeightAsMax.hasMultipleDifferentValues)
                     {
                         // Set the max height to the rect transform height
-                        var rectTransform = fitInRectTransform.objectReferenceValue as UnityEngine.RectTransform;
+                        var rectTransform = fitInRectTransform.objectReferenceValue as RectTransform;
                         maxH.floatValue = rectTransform.rect.height;
                     }
                 }
                 else
                 {
-                    var rectTransform = fitInRectTransform.objectReferenceValue as UnityEngine.RectTransform;
+                    var rectTransform = fitInRectTransform.objectReferenceValue as RectTransform;
                     minH.floatValue = rectTransform.rect.height;
                     maxH.floatValue = rectTransform.rect.height;
                     row.y += lh + sp;
