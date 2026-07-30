@@ -51,43 +51,6 @@ namespace AdriKat.Toolkit.Attributes
                 // ApplyVisibility(animationWrapper, shouldShow);
             }
         }
-
-        private static void ApplyVisibility(VisualElement element, bool visible)
-        {
-            element.style.opacity = visible ? 1f : 0f;
-
-            element.style.translate = visible
-                ? new Translate(0, 0)
-                : new Translate(0, -20);
-
-            element.style.transitionProperty = new List<StylePropertyName>
-            {
-                "opacity",
-                "translate"
-            };
-
-            element.style.transitionDuration = new List<TimeValue>
-            {
-                new(200, TimeUnit.Millisecond),
-                new(200, TimeUnit.Millisecond)
-            };
-        }
-        
-        // private static void ApplyVisibility(VisualElement element, bool visible)
-        // {
-        //     element.style.opacity = visible ? 1f : 0f;
-        //     element.style.marginTop = visible ? 0 : -EditorGUIUtility.singleLineHeight;
-        //     element.style.transitionProperty = new List<StylePropertyName>
-        //     {
-        //         "opacity",
-        //         "margin-top"
-        //     };
-        //     element.style.transitionDuration = new List<TimeValue>
-        //     {
-        //         new(200, TimeUnit.Millisecond),
-        //         new(200, TimeUnit.Millisecond)
-        //     };
-        // }
         
         #endregion
         
