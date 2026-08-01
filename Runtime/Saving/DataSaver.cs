@@ -39,7 +39,7 @@ namespace AdriKat.Toolkit.Saving
         /// <param name="initializer">A function that generates an initialized TData.</param>
         /// <typeparam name="TData">The object to save/load. Must be serializable.</typeparam>
         /// <returns>The TData loaded from the filename, or the initializer's return value if the deserialization produced a null object.</returns>
-        public static TData LoadOrInitData<TData>(string filename, Func<object> initializer) where TData : class
+        public static TData LoadOrInitData<TData>(string filename, Func<TData> initializer) where TData : class
         {
             return SaveUtility.LoadFromBinary<TData>(SaveUtility.AppendToPersistentDataPath(filename)) ?? initializer();
         }
@@ -52,7 +52,7 @@ namespace AdriKat.Toolkit.Saving
         /// <param name="defaultValue">The default value returned if the deserialization produces a null object.</param>
         /// <typeparam name="TData">The object to save/load. Must be serializable.</typeparam>
         /// <returns>The TData loaded from the filename, or the defaultValue if the deserialization produced a null object.</returns>
-        public static TData LoadOrDefaultData<TData>(string filename, object defaultValue) where TData : class
+        public static TData LoadOrDefaultData<TData>(string filename, TData defaultValue) where TData : class
         {
             return SaveUtility.LoadFromBinary<TData>(SaveUtility.AppendToPersistentDataPath(filename)) ?? defaultValue;
         }
