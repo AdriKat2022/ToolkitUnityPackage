@@ -6,14 +6,13 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace AdriKat.Toolkit.UIElements
 {
     public class SlideSelector : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
-        public bool interactableOnStart = true;
-        public bool interactable = true;
         public WarpSelectionMode warpSelectionMode = WarpSelectionMode.Clamp;
         [ButtonAction(nameof(SetChildrenAsOptions), heightSpacing = 20, showButtonBelow = true)]
         public bool makeOptionsClickable;
@@ -33,15 +32,17 @@ namespace AdriKat.Toolkit.UIElements
         public Vector2 offset;
         
         [Header("Input")]
+        public bool interactableOnStart = true;
+        public bool interactable = true;
+        public bool focused = true;
         public bool allowDragging = true;
         public bool autoSetEventToButtons;
         public Button previousButton; 
         public Button nextButton; 
-        // public bool showConfirmButton = true;
         public Button confirmButton;
         public bool disableOnSubmit = true;
-        // public InputActionReference leftAction;
-        // public InputActionReference rightAction;
+        public InputActionReference leftAction;
+        public InputActionReference rightAction;
 
         private Vector2 onDragBeginPosition;
         private Vector2 onDragBeginOffset;
@@ -50,6 +51,24 @@ namespace AdriKat.Toolkit.UIElements
         private int currentOptionSelected;
         private bool isDragging;
         private SmartButton[] optionButtons;
+        
+		private void OnEnable()
+        {
+            if (leftAction != null)
+                leftAction.action.performed += OnLeftAction;
+
+            if (rightAction != null)
+                rightAction.action.performed += OnRightAction;
+        }
+
+        private void OnDisable()
+        {
+            if (leftAction != null)
+                leftAction.action.performed -= OnLeftAction;
+
+            if (rightAction != null)
+                rightAction.action.performed -= OnRightAction;
+        }
         
         private void SetCurrentOptionSelected(int index)
         {
@@ -154,16 +173,6 @@ namespace AdriKat.Toolkit.UIElements
             }
         }
         
-        // public void Focus()
-        // {
-        //     // Activate input actions
-        // }
-        //
-        // public void Unfocus()
-        // {
-        //     // Deactivate input actions
-        // }
-        
         public void ToggleInteractable(bool isInteractable)
         {
             interactable = isInteractable;
@@ -242,6 +251,20 @@ namespace AdriKat.Toolkit.UIElements
             }
         }
         
+        #region Input
+        
+        private void OnLeftAction(InputAction.CallbackContext obj)
+        {
+            if (!focused) return;
+            MoveSelectionPrevious();
+        }
+        
+        private void OnRightAction(InputAction.CallbackContext obj)
+        {
+            if (!focused) return;
+            MoveSelectionNext();
+        }
+        
         public void OnBeginDrag(PointerEventData eventData)
         {
             if (!allowDragging || !interactable) return;
@@ -266,6 +289,8 @@ namespace AdriKat.Toolkit.UIElements
             
             isDragging = false;
         }
+        
+        #endregion
         
 #if UNITY_EDITOR
 
