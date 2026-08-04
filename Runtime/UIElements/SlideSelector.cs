@@ -55,10 +55,16 @@ namespace AdriKat.Toolkit.UIElements
 		private void OnEnable()
         {
             if (leftAction != null)
+            {
+                leftAction.action.Enable();
                 leftAction.action.performed += OnLeftAction;
+            }
 
             if (rightAction != null)
+            {
+                rightAction.action.Enable();
                 rightAction.action.performed += OnRightAction;
+            }
         }
 
         private void OnDisable()
@@ -70,7 +76,7 @@ namespace AdriKat.Toolkit.UIElements
                 rightAction.action.performed -= OnRightAction;
         }
         
-        private void SetCurrentOptionSelected(int index)
+        public void SetCurrentOptionSelected(int index)
         {
             currentOptionSelected = index;
             
