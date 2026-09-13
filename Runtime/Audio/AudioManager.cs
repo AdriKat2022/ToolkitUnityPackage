@@ -179,7 +179,6 @@ namespace AdriKat.Toolkit.Audio
 
             AudioSource sfxSource = GetSource(channel ?? defaultSFXChannel);
             
-            sfxSource.loop = loop;
             sfxSource.clip = audioClip;
             sfxSource.volume = volume;
             sfxSource.Play();
