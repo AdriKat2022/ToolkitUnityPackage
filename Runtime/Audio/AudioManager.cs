@@ -356,7 +356,7 @@ namespace AdriKat.Toolkit.Audio
         /// <param name="loop">Set the channel to repeat playing tracks.</param>
         /// <param name="volume">Override volume for the track.</param>
         /// <param name="channel">ID of the channel to use to play the track.</param>
-        public void PlayMusic(AudioClip audioClip, bool loop = true, float volume = 1f, int? channel = null)
+        public static void PlayMusic(AudioClip audioClip, bool loop = true, float volume = 1f, int? channel = null)
         {
             AudioManager.Instance.PlayMusic(audioClip, loop, volume, channel);
         }
@@ -388,7 +388,7 @@ namespace AdriKat.Toolkit.Audio
         /// <param name="audioClip">AudioClip to play.</param>
         /// <param name="volume">Override volume for the track.</param>
         /// <param name="channel">ID of the channel to use to play the track.</param>
-        public void PlaySFX(AudioClip audioClip, float volume = 1f, int? channel = null)
+        public static void PlaySFX(AudioClip audioClip, float volume = 1f, int? channel = null)
         {
             AudioManager.Instance.PlaySFX(audioClip, volume, channel);
         }
