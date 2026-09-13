@@ -21,9 +21,10 @@ namespace AdriKat.Toolkit.Audio
         [ButtonAction(false, 10, nameof(CreateNewChannel), nameof(RefreshChildrenSources))]
         public int defaultMusicChannel;
         public int defaultSFXChannel = 1;
-        
+
         private Dictionary<string, AudioData> _audioDictionary;
-        
+        private Coroutine _fadeOutCoroutine;
+
         #region Initialization
 
         protected override void Awake()
@@ -63,6 +64,9 @@ namespace AdriKat.Toolkit.Audio
         /// <param name="fadeOutDuration">Duration of the fadeout before completely stopping the track.</param>
         public void StopMusic(float fadeOutDuration = 0.3f)
         {
+            if (_fadeOutCoroutine != null)
+                StopCoroutine(_fadeOutCoroutine);
+
             StopMusic(defaultMusicChannel, fadeOutDuration);
         }
 
@@ -74,7 +78,11 @@ namespace AdriKat.Toolkit.Audio
         public void StopMusic(int channel, float fadeOutDuration = 0.3f)
         {
             AudioSource audioSource = GetSource(channel);
-            StartCoroutine(FadeOutMusicCoroutine(audioSource, fadeOutDuration, audioSource.volume));
+            
+            if (_fadeOutCoroutine != null)
+                StopCoroutine(_fadeOutCoroutine);
+                
+            _fadeOutCoroutine = StartCoroutine(FadeOutMusicCoroutine(audioSource, fadeOutDuration, audioSource.volume));
         }
 
         
@@ -100,6 +108,9 @@ namespace AdriKat.Toolkit.Audio
         {
             if (!TryGetSoundClipData(id, out AudioData sound)) return;
 
+            if (_fadeOutCoroutine != null)
+                StopCoroutine(_fadeOutCoroutine);
+
             AudioSource musicSource = GetSource(channel);
             
             musicSource.loop = loop;
@@ -118,6 +129,9 @@ namespace AdriKat.Toolkit.Audio
         public void PlayMusic(AudioClip audioClip, bool loop = true, float volume = 1f, int? channel = null)
         {
             if (audioClip == null) return;
+
+            if (_fadeOutCoroutine != null)
+                StopCoroutine(_fadeOutCoroutine);
 
             AudioSource musicSource = GetSource(channel ?? defaultMusicChannel);
             
@@ -157,10 +171,9 @@ namespace AdriKat.Toolkit.Audio
         /// Plays the provided track in the provided channel.
         /// </summary>
         /// <param name="audioClip">AudioClip to play.</param>
-        /// <param name="loop">Set the channel to repeat playing tracks.</param>
         /// <param name="volume">Override volume for the track.</param>
         /// <param name="channel">ID of the channel to use to play the track.</param>
-        public void PlaySFX(AudioClip audioClip, bool loop = true, float volume = 1f, int? channel = null)
+        public void PlaySFX(AudioClip audioClip, float volume = 1f, int? channel = null)
         {
             if (audioClip == null) return;
 
@@ -290,7 +303,7 @@ namespace AdriKat.Toolkit.Audio
     }
 
     /// <summary>
-    /// Shortcut class to avoid calling AudioManager.Instance every time.
+    /// Shortcut class to avoid calling AudioManager.Instance everytime.
     /// </summary>
     public static class Audio
     {
@@ -335,6 +348,18 @@ namespace AdriKat.Toolkit.Audio
         {
             AudioManager.Instance.PlayMusic(channel, id, loop, volume);
         }
+        
+        /// <summary>
+        /// Plays the provided track in the provided channel.
+        /// </summary>
+        /// <param name="audioClip">AudioClip to play.</param>
+        /// <param name="loop">Set the channel to repeat playing tracks.</param>
+        /// <param name="volume">Override volume for the track.</param>
+        /// <param name="channel">ID of the channel to use to play the track.</param>
+        public void PlayMusic(AudioClip audioClip, bool loop = true, float volume = 1f, int? channel = null)
+        {
+            AudioManager.Instance.PlayMusic(audioClip, loop, volume, channel);
+        }
 
         /// <summary>
         /// Plays the provided track in the defaultSFXChannel.
@@ -355,6 +380,17 @@ namespace AdriKat.Toolkit.Audio
         public static void PlaySFX(int channel, string id, float volume = 1f)
         {
             AudioManager.Instance.PlaySFX(channel, id, volume);
+        }
+        
+        /// <summary>
+        /// Plays the provided track in the provided channel.
+        /// </summary>
+        /// <param name="audioClip">AudioClip to play.</param>
+        /// <param name="volume">Override volume for the track.</param>
+        /// <param name="channel">ID of the channel to use to play the track.</param>
+        public void PlaySFX(AudioClip audioClip, float volume = 1f, int? channel = null)
+        {
+            AudioManager.Instance.PlaySFX(audioClip, volume, channel);
         }
     }
 }
